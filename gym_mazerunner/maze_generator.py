@@ -1,15 +1,21 @@
+"""Generator for a maze for the envirement."""
 # Maze generation using recursive backtracker algorithm
 # https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker
 
 from queue import LifoQueue
+
+from random import choice
+from random import randint
+
 from PIL import Image
+
 import numpy as np
-from random import choice, randint
 
 
 def generate_maze(size: int = 16, center_size: int = 4) -> np.array:
     """
-    Generate maze
+    Generate maze.
+
     :param size: size of the maze
     :param center_size: size of center section
     :return: numpy array of booleans with shape = [size * 2 + 1, size * 2 + 1]
@@ -20,8 +26,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> np.array:
 
     stack = LifoQueue()
     cells = np.zeros((size, size), dtype=bool)
-    cells[size // 2 - center_size // 2:size // 2 + center_size // 2,
-    size // 2 - center_size // 2:size // 2 + center_size // 2] = True
+    cells[size // 2 - center_size // 2:size // 2 + center_size // 2, size // 2 - center_size // 2:size // 2 + center_size // 2] = True
     stack.put((size // 2 + center_size // 2, size // 2))
 
     while not stack.empty():
