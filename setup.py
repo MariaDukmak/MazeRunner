@@ -13,7 +13,7 @@ setup(
     python_requires='>=3.6',
     author='Maria Dukmak',
     author_email='Maria.dukmak@student.hu.nl',
-    keyword='agents', 'agent-based',
+    keyword=['agents', 'agent-based'],
     long_description=open('README.md').read(),
-    long_description_content_type='text/markdown',,
+    long_description_content_type='text/markdown',
 )
