@@ -12,4 +12,4 @@ Git repo voor de challenges van het vak Autonomy By Design.
 De simulatie bestaat uit twee onderdelen, dat zijn de `Environment` en de  `Agent`. 
 Hieronder kan je zien hoe de simulatie ongeveer in elkaar zit:
 
-![](C:\Users\marya\Desktop\Projects\MazeRunner\images\schets_simulatie.png)
+![](https://github.com/MariaDukmak/MazeRunner/tree/Readme-uitwerken/images)
