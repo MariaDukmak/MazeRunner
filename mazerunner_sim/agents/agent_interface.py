@@ -1,7 +1,7 @@
 """Class file for making agents."""
 import abc
 
-from mazerunner_sim.observation_and_action import RunnerObservation, Action
+from mazerunner_sim.observation_and_action import Observation, Action
 
 
 class Agent(metaclass=abc.ABCMeta):
@@ -12,6 +12,6 @@ class Agent(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def observation_action(self, observation: RunnerObservation) -> Action:
+    def decide_action(self, observation: Observation) -> Action:
         """Take an action based on the given observation."""
         raise NotImplementedError

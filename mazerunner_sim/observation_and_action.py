@@ -9,7 +9,7 @@ from typing import NamedTuple, Tuple
 import numpy as np
 
 
-class RunnerObservation(NamedTuple):
+class Observation(NamedTuple):
     """
     The Maze Runner environment returns observations, agents need this to make decisions.
 
@@ -17,14 +17,14 @@ class RunnerObservation(NamedTuple):
         explored: map of booleans the size of the entire maze, True means explored, False means not explored
         known_maze: map of booleans the size of the entire maze, True means open to walk, False means a wall or unexplored
         runner_location: Coordinate location of the runner (x, y)
-        time_of_day: Time of the day, between 0 and `day_length`
+        time_till_end_of_day: Time till the end of the day, decreases from `day_length` to 0
 
     This can be expanded to have more observation parameters in the future as the simulation development continuous.
     """
     explored: np.array
     known_maze: np.array
     runner_location: Tuple[int, int]
-    time_of_day: int
+    time_till_end_of_day: int
 
 
 class Action(int):

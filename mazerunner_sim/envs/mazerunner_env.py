@@ -12,9 +12,11 @@ from mazerunner_sim.envs.maze_render import render_agent_in_step, render_backgro
 
 from mazerunner_sim.envs.runner import Runner
 
-from mazerunner_sim.observation_and_action import RunnerObservation, Action
+from mazerunner_sim.observation_and_action import Observation, Action
 
 import numpy as np
+
+from functools import reduce
 
 
 class MazeRunnerEnv(gym.Env):
@@ -22,7 +24,6 @@ class MazeRunnerEnv(gym.Env):
 
     # 4 possible actions: 0:Up, 1:Down, 2:Left, 3:Right
     action_space = gym.spaces.Discrete(4)
-    observation_space = gym.spaces.Box(low=False, high=True, shape=(3, 3), dtype=bool)
     metadata = {'render.modes': ['human']}
 
     done: bool
@@ -49,7 +50,7 @@ class MazeRunnerEnv(gym.Env):
 
         self.rendered_background = render_background(self.maze)
 
-    def step(self, actions: List[Action]) -> Tuple[List[RunnerObservation], float, bool, dict]:
+    def step(self, actions: List[Action]) -> Tuple[List[Observation], float, bool, dict]:
         """
         Taken an step in the environment.
 
@@ -70,16 +71,24 @@ class MazeRunnerEnv(gym.Env):
                 if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
 
-        # Kill the runners that are still in the maze at the end of the day
-        if self.time % self.day_length == 0:
-            for runner in self.runners:
-                if not self.safe_zone[tuple(runner.location)]:
-                    runner.alive = False
-
         # Update maps
         for r in self.runners:
             if r.alive:
                 r.update_map(self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2])
+
+        # At the end of the day
+        if self.time % self.day_length == 0:
+            # kill the ones still in the maze
+            for runner in self.runners:
+                if not self.safe_zone[tuple(runner.location)]:
+                    runner.alive = False
+            # share memory map between those still alive
+            combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
+            combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
+            for runner in self.runners:
+                if runner.alive:
+                    runner.explored = combined_explored_map.copy()
+                    runner.known_maze = combined_maze_map.copy()
 
         # Observations
         observations = self.get_observations()
@@ -113,26 +122,27 @@ class MazeRunnerEnv(gym.Env):
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
         self.runners = [Runner(center_coord.copy(), self.maze.shape) for _ in range(self.n_agents)]
 
-    def get_observations(self) -> List[RunnerObservation]:
+    def get_observations(self) -> List[Observation]:
         """
         Get information about the environment location, returns walls.
 
         :return A list of runner-observations, take a look at it's documentation for more detail
         """
         return [
-            RunnerObservation(
+            Observation(
                 explored=runner.explored.copy(),
                 known_maze=runner.known_maze.copy(),
                 runner_location=(runner.location[0], runner.location[1]),
-                time_of_day=self.time % self.day_length,
+                time_till_end_of_day=self.day_length - (self.time % self.day_length) - 1,
             )
             for runner in self.runners
         ]
 
-    def render(self, mode="human") -> Image:
+    def render(self, mode="human", follow_agent_id: int = None) -> Image:
         """
         Render the state of the environment.
 
+        :param follow_agent_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
         return render_agent_in_step(self.maze, self.rendered_background, self.runners)
