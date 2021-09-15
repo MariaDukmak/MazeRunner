@@ -3,8 +3,8 @@ from typing import List
 
 import cv2
 
-from mazerunner_sim.agents.Agent import Agent
-from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
+from mazerunner_sim.agents import Agent
+from mazerunner_sim.envs import MazeRunnerEnv
 
 import numpy as np
 

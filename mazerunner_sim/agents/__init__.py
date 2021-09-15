@@ -1,2 +1,2 @@
-from mazerunner_sim.agents.Agent import Agent
-from mazerunner_sim.agents.PureRandomAgent import PureRandomAgent
+from mazerunner_sim.agents.agent import Agent
+from mazerunner_sim.agents.pure_random_agent import PureRandomAgent
