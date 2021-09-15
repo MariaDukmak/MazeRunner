@@ -1,9 +1,9 @@
 """Example agent that takes random actions."""
+import cv2
 
 from gym_mazerunner.mazerunner_env import MazeRunnerEnv
 
 import numpy as np
-import cv2
 
 WINDOW_NAME = 'Mazerunner-sim'
 
@@ -16,7 +16,7 @@ while not done:
     render = env.render()
 
     cv2.imshow(WINDOW_NAME, cv2.cvtColor(np.array(render), cv2.COLOR_BGR2RGB))
-    cv2.waitKey(25)
+    cv2.waitKey(10)
 
     if cv2.getWindowProperty(WINDOW_NAME, cv2.WND_PROP_VISIBLE) < 1:
         break
