@@ -1,0 +1,1 @@
+from mazerunner_sim.simulator import run_simulation
