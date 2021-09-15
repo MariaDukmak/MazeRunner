@@ -2,18 +2,18 @@
 
 from typing import List, Tuple
 
+from PIL import Image
+
 import gym
 
 from gym_mazerunner.maze_generator import generate_maze
 
-from gym_mazerunner.runner import Runner
+from gym_mazerunner.maze_render import render_agent_in_step, render_background
 
-from gym_mazerunner.maze_render import render_background, render_agent_in_step
+from gym_mazerunner.runner import Runner
 
 import numpy as np
 import numpy.typing as npt
-
-from PIL import Image
 
 
 class MazeRunnerEnv(gym.Env):
@@ -46,7 +46,7 @@ class MazeRunnerEnv(gym.Env):
         self.n_agents = n_agents
         self.reset()
 
-        self.rendered_background = render_background(self.maze, True)
+        self.rendered_background = render_background(self.maze)
 
     def step(self, actions: List[np.int64]) -> Tuple[List[npt.NDArray], float, bool, dict]:
         """
@@ -123,5 +123,4 @@ class MazeRunnerEnv(gym.Env):
 
         :param mode: Mode of rendering, choose between: ['human']
         """
-
-        return render_agent_in_step(self.maze, self.rendered_background, self.runners, self.time)
+        return render_agent_in_step(self.maze, self.rendered_background, self.runners)
