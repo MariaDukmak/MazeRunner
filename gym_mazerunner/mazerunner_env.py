@@ -2,9 +2,13 @@
 
 from typing import List, Tuple
 
+from PIL import Image
+
 import gym
 
 from gym_mazerunner.maze_generator import generate_maze
+
+from gym_mazerunner.maze_render import render_agent_in_step, render_background
 
 from gym_mazerunner.runner import Runner
 
@@ -42,6 +46,8 @@ class MazeRunnerEnv(gym.Env):
         self.n_agents = n_agents
         self.reset()
 
+        self.rendered_background = render_background(self.maze)
+
     def step(self, actions: List[np.int64]) -> Tuple[List[npt.NDArray], float, bool, dict]:
         """
         Taken an step in the environment.
@@ -65,7 +71,7 @@ class MazeRunnerEnv(gym.Env):
                                  [-1, 0],
                                  [1, 0]][action])
                 # if the step is actually possible, take the step
-                if self.maze[tuple(runner.location + step)]:
+                if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
 
         # Kill the runners that are still in the maze at the end of the day
@@ -109,12 +115,12 @@ class MazeRunnerEnv(gym.Env):
         self.total_rewards_given = 0.
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
-        self.runners = [Runner(center_coord) for _ in range(self.n_agents)]
+        self.runners = [Runner(center_coord.copy()) for _ in range(self.n_agents)]
 
-    def render(self, mode="human"):
+    def render(self, mode="human") -> Image:
         """
         Render the state of the environment.
 
         :param mode: Mode of rendering, choose between: ['human']
         """
-        pass
+        return render_agent_in_step(self.maze, self.rendered_background, self.runners)

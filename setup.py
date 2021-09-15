@@ -4,6 +4,7 @@ install_requires = [
     'gym',
     'numpy',
     'Pillow',
+    'opencv-python',
 ]
 
 setup(
