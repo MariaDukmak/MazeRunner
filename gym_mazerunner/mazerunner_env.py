@@ -1,12 +1,15 @@
 """OpenAI gym environment for the MazeRunner."""
 
 from typing import List, Tuple
+
 import gym
-import numpy as np
-import numpy.typing as npt
 
 from gym_mazerunner.maze_generator import generate_maze
+
 from gym_mazerunner.runner import Runner
+
+import numpy as np
+import numpy.typing as npt
 
 
 class MazeRunnerEnv(gym.Env):
@@ -25,6 +28,14 @@ class MazeRunnerEnv(gym.Env):
     DEATH_PUNISHMENT = 99999
 
     def __init__(self, maze_size: int = 16, center_size: int = 4, n_agents: int = 1, day_length: int = 20):
+        """
+        Initialize the MazeRunner environment.
+
+        :param maze_size: Size of the maze
+        :param center_size: Size of the glade (center)
+        :param n_agents: Number of agents, results in the number of runners
+        :param day_length: Length of a day, at the end of the day, all the runners not in a safe spot are going to a better place
+        """
         super(MazeRunnerEnv, self).__init__()
         self.maze, self.safe_zone = generate_maze(maze_size, center_size)
         self.day_length = day_length
