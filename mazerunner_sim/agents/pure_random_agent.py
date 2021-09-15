@@ -1,13 +1,13 @@
 """Example agent that takes random actions."""
 from mazerunner_sim.agents import Agent
+from mazerunner_sim.observation_and_action import RunnerObservation, Action
 
 import numpy as np
-import numpy.typing as npt
 
 
 class PureRandomAgent(Agent):
     """Create pure random agent."""
 
-    def decide_action(self, observation: npt.NDArray) -> int:
-        """Decide action for random agent."""
-        return np.random.randint(4)
+    def observation_action(self, observation: RunnerObservation) -> Action:
+        """Take a random action, regardless of the observation."""
+        return np.random.choice([Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT])

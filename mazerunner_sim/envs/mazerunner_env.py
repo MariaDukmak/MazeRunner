@@ -12,8 +12,9 @@ from mazerunner_sim.envs.maze_render import render_agent_in_step, render_backgro
 
 from mazerunner_sim.envs.runner import Runner
 
+from mazerunner_sim.observation_and_action import RunnerObservation, Action
+
 import numpy as np
-import numpy.typing as npt
 
 
 class MazeRunnerEnv(gym.Env):
@@ -48,17 +49,12 @@ class MazeRunnerEnv(gym.Env):
 
         self.rendered_background = render_background(self.maze)
 
-    def step(self, actions: List[np.int64]) -> Tuple[List[npt.NDArray], float, bool, dict]:
+    def step(self, actions: List[Action]) -> Tuple[List[RunnerObservation], float, bool, dict]:
         """
         Taken an step in the environment.
 
-        :param actions: a list of actions, an action for each runner and the possibilities are:
-            0: take a step to the north
-            1: take a step to the south
-            2: take a step to the west
-            3: take a step to the east
+        :param actions: list of actions
         :return: observations, reward, done, info.
-            each runner has it's own observation, and it's a block of pixels (3x3) around the runner.
         """
         # Increment time
         self.time += 1
@@ -70,7 +66,7 @@ class MazeRunnerEnv(gym.Env):
                                  [0, 1],
                                  [-1, 0],
                                  [1, 0]][action])
-                # if the step is actually possible, take the step
+                # if the step is actually possible, take the step # TODO add extra code for checking if space is accupied
                 if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
 
@@ -80,8 +76,13 @@ class MazeRunnerEnv(gym.Env):
                 if not self.safe_zone[tuple(runner.location)]:
                     runner.alive = False
 
+        # Update maps
+        for r in self.runners:
+            if r.alive:
+                r.update_map(self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2])
+
         # Observations
-        observations = self.get_observation()
+        observations = self.get_observations()
 
         # Reward & done
         reward = -1
@@ -110,15 +111,22 @@ class MazeRunnerEnv(gym.Env):
         self.total_rewards_given = 0.
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
-        self.runners = [Runner(center_coord.copy()) for _ in range(self.n_agents)]
+        self.runners = [Runner(center_coord.copy(), self.maze.shape) for _ in range(self.n_agents)]
 
-    def get_observation(self):
-        """Get information about the environment location, returns walls."""
+    def get_observations(self) -> List[RunnerObservation]:
+        """
+        Get information about the environment location, returns walls.
+
+        :return A list of runner-observations, take a look at it's documentation for more detail
+        """
         return [
-            self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2]
-            if r.alive else
-            np.full((3, 3), False)
-            for r in self.runners
+            RunnerObservation(
+                explored=runner.explored.copy(),
+                known_maze=runner.known_maze.copy(),
+                runner_location=(runner.location[0], runner.location[1]),
+                time_of_day=self.time % self.day_length,
+            )
+            for runner in self.runners
         ]
 
     def render(self, mode="human") -> Image:

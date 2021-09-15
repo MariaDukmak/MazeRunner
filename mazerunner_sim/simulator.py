@@ -25,11 +25,11 @@ def run_simulation(env: MazeRunnerEnv,
     done = False
     total_reward = 0
 
-    observations = env.get_observation()
+    observations = env.get_observations()
 
     while not done:
         # For every agent, decide an action according to the observation
-        actions = [agent.decide_action(observations) for agent in agents]
+        actions = [agent.observation_action(observation) for agent, observation in zip(agents, observations)]
 
         # Let the actions take place in the environment
         observations, reward, done, info = env.step(actions)
