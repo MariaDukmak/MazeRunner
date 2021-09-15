@@ -1,4 +1,5 @@
-"""Class file for mazerunner environment."""
+"""OpenAI gym environment for the MazeRunner."""
+
 from typing import List, Tuple
 import gym
 import numpy as np
@@ -9,6 +10,8 @@ from gym_mazerunner.runner import Runner
 
 
 class MazeRunnerEnv(gym.Env):
+    """OpenAI gym environment for the MazeRunner."""
+
     # 4 possible actions: 0:Up, 1:Down, 2:Left, 3:Right
     action_space = gym.spaces.Discrete(4)
     observation_space = gym.spaces.Box(low=False, high=True, shape=(3, 3), dtype=bool)
@@ -30,9 +33,15 @@ class MazeRunnerEnv(gym.Env):
 
     def step(self, actions: List[np.int64]) -> Tuple[List[npt.NDArray], float, bool, dict]:
         """
+        Taken an step in the environment.
 
-        :param actions:
-        :return: observations, reward, done, info
+        :param actions: a list of actions, an action for each runner and the possibilities are:
+            0: take a step to the north
+            1: take a step to the south
+            2: take a step to the west
+            3: take a step to the east
+        :return: observations, reward, done, info.
+            each runner has it's own observation, and it's a block of pixels (3x3) around the runner.
         """
         # Increment time
         self.time += 1
@@ -56,7 +65,7 @@ class MazeRunnerEnv(gym.Env):
 
         # Observations
         observations = [
-            self.maze[r.location[1]-1:r.location[1]+2, r.location[0]-1:r.location[0]+2]
+            self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2]
             if r.alive else
             np.full((3, 3), False)
             for r in self.runners
@@ -65,8 +74,8 @@ class MazeRunnerEnv(gym.Env):
         # Reward & done
         reward = -1
         # if a runner found the exit
-        if any(r.location[0] == 0 or r.location[0] == self.maze.shape[1]-1 or
-               r.location[1] == 0 or r.location[1] == self.maze.shape[0]-1
+        if any(r.location[0] == 0 or r.location[0] == self.maze.shape[1] - 1 or
+               r.location[1] == 0 or r.location[1] == self.maze.shape[0] - 1
                for r in self.runners):
             self.done = True
         # if all runners are dead
@@ -78,6 +87,12 @@ class MazeRunnerEnv(gym.Env):
         return observations, reward, self.done, {}
 
     def reset(self):
+        """
+        Reset the environment.
+
+        The maze stays the same, so does the number of runners and the day-length,
+        but the agents are reset, the time and the `done` flag.
+        """
         self.done = False
         self.time = 0
         self.total_rewards_given = 0.
@@ -86,4 +101,9 @@ class MazeRunnerEnv(gym.Env):
         self.runners = [Runner(center_coord) for _ in range(self.n_agents)]
 
     def render(self, mode="human"):
+        """
+        Render the state of the environment.
+
+        :param mode: Mode of rendering, choose between: ['human']
+        """
         pass

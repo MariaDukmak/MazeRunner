@@ -2,7 +2,7 @@
 # Maze generation using recursive backtracker algorithm
 # https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker
 
-from typing import Tuple, Any
+from typing import Tuple
 
 from queue import LifoQueue
 
