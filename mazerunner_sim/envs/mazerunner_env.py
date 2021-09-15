@@ -138,11 +138,11 @@ class MazeRunnerEnv(gym.Env):
             for runner in self.runners
         ]
 
-    def render(self, mode="human", follow_agent_id: int = None) -> Image:
+    def render(self, mode="human", follow_runner_id: int = None) -> Image:
         """
         Render the state of the environment.
 
-        :param follow_agent_id: The index of the agent to follow what has been explored
+        :param follow_runner_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
-        return render_agent_in_step(self.maze, self.rendered_background, self.runners)
+        return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)

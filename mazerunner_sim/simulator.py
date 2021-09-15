@@ -12,7 +12,8 @@ import numpy as np
 def run_simulation(env: MazeRunnerEnv,
                    agents: List[Agent],
                    window_name: str = 'MazeRunner Simulation',
-                   wait_key: int = 10) -> float:
+                   wait_key: int = 10,
+                   follow_runner_id: int = None) -> float:
     """
     Run the simulation with given parameters.
 
@@ -20,6 +21,7 @@ def run_simulation(env: MazeRunnerEnv,
     :param agents: List of agents used in the experiments
     :param window_name: Name used for the simulation
     :param wait_key: Time in milliseconds used as interval for displaying steps
+    :param follow_runner_id: Id used to follow runner
     :return: Total reward gotten
     """
     done = False
@@ -37,7 +39,7 @@ def run_simulation(env: MazeRunnerEnv,
         total_reward += reward
 
         # Render current time in simulation for visual output
-        render = env.render()
+        render = env.render(follow_runner_id=follow_runner_id)
 
         # Display render of current time in the environment
         cv2.imshow(window_name, cv2.cvtColor(np.array(render), cv2.COLOR_BGR2RGB))

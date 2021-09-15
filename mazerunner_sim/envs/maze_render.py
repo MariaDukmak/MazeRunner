@@ -44,15 +44,13 @@ def render_background(maze: np.array) -> Image:
     return background
 
 
-def render_agent_in_step(maze_information: np.array, background_image: Image, runners: List[Runner]) -> Image:
+def render_agent_in_step(maze_information: np.array, background_image: Image, runners: List[Runner], render_agent_id: int = None) -> Image:
     """
     Render all agents from step.
 
     :param maze_information: Information about the maze
     :param background_image: Rendered background from maze information
     :param runners: List of all runners
-    :param step: Current step of the environment
-    :param want_to_save: Save current step to folder
     :return: Returns image of current step
     """
     # Copy from background
@@ -75,4 +73,39 @@ def render_agent_in_step(maze_information: np.array, background_image: Image, ru
             agent_icon
         )
 
+    if render_agent_id is not None:
+        copy_background = render_explored_maze(copy_background, runners[render_agent_id])
+
     return copy_background
+
+
+def render_explored_maze(background_image: Image, runner: Runner) -> Image:
+    """
+    Render explored maze attribute from runner.
+
+    :param maze_information: Information about the maze
+    :param background_image: Rendered background from maze information
+    :param runner: Runner used for rendering
+    :return: Returns image of current step
+    """
+    # Copy from background
+    copy_background = background_image.copy()
+    # Declare with images used for the agent
+    cloud_img = Image.open(textures_path / "cloud.png")
+
+    # Calculate canvas size of the maze
+    tile_width = background_image.width // runner.explored.shape[0]
+    tile_height = background_image.height // runner.explored.shape[1]
+
+    # Create cloud canvas layer
+    cloud_layer = Image.new(mode="RGB", size=(background_image.width, background_image.height))
+
+    # Loop through values from the maze and determine where the walls and path are
+    for height_row, width_values in enumerate(runner.explored):
+        for index, is_known_tile in enumerate(width_values):
+            if is_known_tile:
+                cloud_layer.paste(cloud_img, (index * tile_width, height_row * tile_height))
+
+    # Blend cloud layer with background
+    blended_background = Image.blend(copy_background, cloud_layer, alpha=0.25)
+    return blended_background
