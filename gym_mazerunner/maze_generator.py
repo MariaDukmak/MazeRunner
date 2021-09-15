@@ -7,12 +7,15 @@ from queue import LifoQueue
 from random import choice
 from random import randint
 
+from typing import Tuple
+
 from PIL import Image
 
 import numpy as np
+import numpy.typing as npt
 
 
-def generate_maze(size: int = 16, center_size: int = 4) -> np.array:
+def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, npt.NDArray]:
     """
     Generate maze.
 
@@ -23,6 +26,19 @@ def generate_maze(size: int = 16, center_size: int = 4) -> np.array:
     # Modified from https://github.com/ravenkls/Maze-Generator-and-Solver/blob/master/maze_generator.py
     pixels = np.zeros((2 * size + 1, 2 * size + 1), dtype=bool)
     pixels[size - center_size + 1:size + center_size, size - center_size + 1:size + center_size] = True
+
+    # Creating exit
+    random_height = randint(1, size * 2 - 1)
+    exit_x, exit_y, offset_x, offset_y = choice([
+        [0, random_height, 1, 0],  # left side
+        [size * 2, random_height, -1, 0],  # right side
+        [random_height, size * 2, 0, -1],  # bottom side
+        [random_height, 0, 0, 1]  # top side
+    ])
+    pixels[exit_x, exit_y] = True
+    pixels[exit_x + offset_x, exit_y + offset_y] = True
+
+    safe_zone = pixels.copy()
 
     stack = LifoQueue()
     cells = np.zeros((size, size), dtype=bool)
@@ -62,18 +78,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> np.array:
         pixels[size + center_size * x_b, size + center_size * y_b] = True
         pixels[size + (center_size + 1) * x_b, size + (center_size + 1) * y_b] = True
 
-    # Creating exit
-    random_height = randint(1, size * 2 - 1)
-    exit_x, exit_y, offset_x, offset_y = choice([
-        [0, random_height, 1, 0],  # left side
-        [size * 2, random_height, -1, 0],  # right side
-        [random_height, size * 2, 0, -1],  # bottom side
-        [random_height, 0, 0, 1]  # top side
-    ])
-    pixels[exit_x, exit_y] = True
-    pixels[exit_x + offset_x, exit_y + offset_y] = True
-
-    return pixels
+    return pixels, safe_zone
 
 
 if __name__ == '__main__':
