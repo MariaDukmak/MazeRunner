@@ -6,11 +6,11 @@ from PIL import Image
 
 import gym
 
-from gym_mazerunner.maze_generator import generate_maze
+from mazerunner_sim.envs.maze_generator import generate_maze
 
-from gym_mazerunner.maze_render import render_agent_in_step, render_background
+from mazerunner_sim.envs.maze_render import render_agent_in_step, render_background
 
-from gym_mazerunner.runner import Runner
+from mazerunner_sim.envs.runner import Runner
 
 import numpy as np
 import numpy.typing as npt
@@ -81,12 +81,7 @@ class MazeRunnerEnv(gym.Env):
                     runner.alive = False
 
         # Observations
-        observations = [
-            self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2]
-            if r.alive else
-            np.full((3, 3), False)
-            for r in self.runners
-        ]
+        observations = self.get_observation()
 
         # Reward & done
         reward = -1
@@ -116,6 +111,15 @@ class MazeRunnerEnv(gym.Env):
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
         self.runners = [Runner(center_coord.copy()) for _ in range(self.n_agents)]
+
+    def get_observation(self):
+        """Get information about the environment location, returns walls."""
+        return [
+            self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2]
+            if r.alive else
+            np.full((3, 3), False)
+            for r in self.runners
+        ]
 
     def render(self, mode="human") -> Image:
         """

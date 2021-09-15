@@ -6,7 +6,7 @@ from typing import List
 
 from PIL import Image
 
-from gym_mazerunner.runner import Runner
+from mazerunner_sim.envs.runner import Runner
 
 import numpy as np
 
