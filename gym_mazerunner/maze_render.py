@@ -1,10 +1,17 @@
 """This file contains code to render a maze."""
 
 import os
+from pathlib import Path
 
 from PIL import Image
 
+from gym_mazerunner.runner import Runner
+
+from typing import List
+
 import numpy as np
+
+textures_path = Path(__file__) / '..' / 'textures'
 
 
 def render_background(maze: np.array, save_background: bool = False, file_name: str = "maze.png") -> Image:
@@ -12,10 +19,12 @@ def render_background(maze: np.array, save_background: bool = False, file_name: 
     Render the maze and save it if specified.
 
     :param maze: Maze from generate maze function in np 2D array
+    :param save_background
+    :param file_name
     """
     # Declare with images used for walls and path
-    walls = Image.open("textures/stonebrick.png")
-    path = Image.open("textures/dirt.png")
+    walls = Image.open(textures_path / "stonebrick.png")
+    path = Image.open(textures_path / "dirt.png")
 
     # Get width and height of the walls
     tile_size_width, tile_size_height = walls.size
@@ -44,14 +53,14 @@ def render_background(maze: np.array, save_background: bool = False, file_name: 
     return background
 
 
-def render_agent_in_step(maze_information: np.array, background_image: Image, agent_location_list: [np.array],
+def render_agent_in_step(maze_information: np.array, background_image: Image, runners: List[Runner],
                          step: int = 0, want_to_save: bool = False) -> Image:
     """
     Render all agents from step.
 
     :param maze_information: Information about the maze
     :param background_image: Rendered background from maze information
-    :param agent_location_list: List of locations from all agents
+    :param runners: List of all runners
     :param step: Current step of the environment
     :param want_to_save: Save current step to folder
     :return:
@@ -59,18 +68,18 @@ def render_agent_in_step(maze_information: np.array, background_image: Image, ag
     # Copy from background
     copy_background = background_image.copy()
     # Declare with images used for the agent
-    agent_icon = Image.open("textures/agent.png")
+    agent_icon = Image.open(textures_path / "agent.png")
 
     # Calculate canvas size of the maze
     tile_width = background_image.width // maze_information.shape[0]
     tile_height = background_image.height // maze_information.shape[1]
 
-    for index, item in enumerate(agent_location_list):
+    for index, runner in enumerate(runners):
         agent_icon_copy = agent_icon.copy()
 
-        # TODO change each agent with idex variable
+        # TODO change each agent with index variable
 
-        copy_background.paste(agent_icon_copy, (item[0] * tile_width, item[1] * tile_height), agent_icon)
+        copy_background.paste(agent_icon_copy, (runner.location[0] * tile_width, runner.location[1] * tile_height), agent_icon)
 
     if want_to_save:
         if not os.path.exists("maze_output"):
