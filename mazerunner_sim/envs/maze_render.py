@@ -88,24 +88,38 @@ def render_explored_maze(background_image: Image, runner: Runner) -> Image:
     :param runner: Runner used for rendering
     :return: Returns image of current step
     """
-    # Copy from background
-    copy_background = background_image.copy()
-    # Declare with images used for the agent
-    cloud_img = Image.open(textures_path / "cloud.png")
+    pixels = np.array(background_image)
 
     # Calculate canvas size of the maze
     tile_width = background_image.width // runner.explored.shape[0]
     tile_height = background_image.height // runner.explored.shape[1]
 
-    # Create cloud canvas layer
-    cloud_layer = Image.new(mode="RGB", size=(background_image.width, background_image.height))
-
     # Loop through values from the maze and determine where the walls and path are
-    for height_row, width_values in enumerate(runner.explored):
-        for index, is_known_tile in enumerate(width_values):
-            if is_known_tile:
-                cloud_layer.paste(cloud_img, (index * tile_width, height_row * tile_height))
+    for y in range(runner.explored.shape[0]):
+        for x in range(runner.explored.shape[1]):
+            if not runner.explored[y, x]:
+                pixels[int(y*tile_height):int((y+1)*tile_height), int(x*tile_width):int((x+1)*tile_width)] = 0
 
-    # Blend cloud layer with background
-    blended_background = Image.blend(copy_background, cloud_layer, alpha=0.25)
-    return blended_background
+    return Image.fromarray(pixels, 'RGB')
+
+    # # Copy from background
+    # copy_background = background_image.copy()
+    # # Declare with images used for the agent
+    # cloud_img = Image.open(textures_path / "cloud.png")
+    #
+    # # Calculate canvas size of the maze
+    # tile_width = background_image.width // runner.explored.shape[0]
+    # tile_height = background_image.height // runner.explored.shape[1]
+    #
+    # # Create cloud canvas layer
+    # cloud_layer = Image.new(mode="RGB", size=(background_image.width, background_image.height))
+    #
+    # # Loop through values from the maze and determine where the walls and path are
+    # for height_row, width_values in enumerate(runner.explored):
+    #     for index, is_known_tile in enumerate(width_values):
+    #         if is_known_tile:
+    #             cloud_layer.paste(cloud_img, (index * tile_width, height_row * tile_height))
+    #
+    # # Blend cloud layer with background
+    # blended_background = Image.blend(copy_background, cloud_layer, alpha=0.25)
+    # return blended_background
