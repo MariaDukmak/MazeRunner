@@ -13,7 +13,7 @@ import numpy as np
 textures_path = Path(__file__) / '..' / 'textures'
 
 
-def render_background(maze: np.array) -> Image:
+def render_background(maze: np.array, leaves: np.array) -> Image:
     """
     Render the maze and save it if specified.
 
@@ -22,6 +22,7 @@ def render_background(maze: np.array) -> Image:
     # Declare with images used for walls and path
     walls = Image.open(textures_path / "stonebrick.png")
     path = Image.open(textures_path / "dirt.png")
+    leaf = Image.open(textures_path / "leaf.png")
 
     # Get width and height of the walls
     tile_size_width, tile_size_height = walls.size
@@ -37,9 +38,13 @@ def render_background(maze: np.array) -> Image:
     for height_row, width_values in enumerate(maze):
         for index, is_open_tile in enumerate(width_values):
             if is_open_tile:
-                background.paste(path, (index * tile_size_width, height_row * tile_size_height))
+                if leaves[height_row, index]:
+                    texture = leaf
+                else:
+                    texture = path
             else:
-                background.paste(walls, (index * tile_size_width, height_row * tile_size_height))
+                texture = walls
+            background.paste(texture, (index * tile_size_width, height_row * tile_size_height))
 
     return background
 

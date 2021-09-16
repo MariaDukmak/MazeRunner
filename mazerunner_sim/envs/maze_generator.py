@@ -12,10 +12,11 @@ from typing import Tuple
 from PIL import Image
 
 import numpy as np
-import numpy.typing as npt
+
+from mazerunner_sim.utils.pathfinder import manhattan_distance
 
 
-def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, npt.NDArray]:
+def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.array, np.array]:
     """
     Generate maze.
 
@@ -38,7 +39,6 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
     ])
     pixels[exit_x, exit_y] = True
     pixels[exit_x + offset_x, exit_y + offset_y] = True
-
 
     stack = LifoQueue()
     cells = np.zeros((size, size), dtype=bool)
@@ -78,7 +78,15 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
         pixels[size + center_size * x_b, size + center_size * y_b] = True
         pixels[size + (center_size + 1) * x_b, size + (center_size + 1) * y_b] = True
 
-    return pixels, safe_zone
+    # Leaves
+    leaves = np.zeros((2 * size + 1, 2 * size + 1), dtype=float)
+    for y in range(leaves.shape[0]):
+        for x in range(leaves.shape[1]):
+            if pixels[y, x]:
+                leaves[y, x] = manhattan_distance((x, y), (exit_x, exit_y))
+    leaves = np.random.rand(*leaves.shape) < leaves / (np.max(leaves) * 2)
+
+    return pixels, safe_zone, leaves
 
 
 if __name__ == '__main__':

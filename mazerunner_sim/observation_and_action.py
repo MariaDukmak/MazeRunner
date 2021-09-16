@@ -24,6 +24,7 @@ class Observation(NamedTuple):
     """
     explored: np.array
     known_maze: np.array
+    known_leaves: np.array
     safe_zone: np.array
     runner_location: Tuple[int, int]
     time_till_end_of_day: int

@@ -42,12 +42,12 @@ class MazeRunnerEnv(gym.Env):
         :param day_length: Length of a day, at the end of the day, all the runners not in a safe spot are going to a better place
         """
         super(MazeRunnerEnv, self).__init__()
-        self.maze, self.safe_zone = generate_maze(maze_size, center_size)
+        self.maze, self.safe_zone, self.leaves = generate_maze(maze_size, center_size)
         self.day_length = day_length
         self.n_agents = n_agents
         self.reset()
 
-        self.rendered_background = render_background(self.maze)
+        self.rendered_background = render_background(self.maze, self.leaves)
 
     def step(self, actions: List[Action]) -> Tuple[List[Observation], float, bool, dict]:
         """
@@ -74,7 +74,10 @@ class MazeRunnerEnv(gym.Env):
         # Update maps
         for r in self.runners:
             if r.alive:
-                r.update_map(self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2])
+                r.update_map(
+                    self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2],
+                    self.leaves[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2]
+                )
 
         # Kill the runners that are still in the maze at the end of the day
         if self.time % self.day_length == 0:
@@ -99,10 +102,12 @@ class MazeRunnerEnv(gym.Env):
         if self.time % self.day_length == 0 and not self.done:
             combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
             combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
+            combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
             for runner in self.runners:
                 if runner.alive:
                     runner.explored = combined_explored_map.copy()
                     runner.known_maze = combined_maze_map.copy()
+                    runner.known_leaves = combined_leaves_map.copy()
 
         # Observations
         observations = self.get_observations()
@@ -121,7 +126,7 @@ class MazeRunnerEnv(gym.Env):
         self.total_rewards_given = 0.
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
-        self.runners = [Runner(center_coord.copy(), self.safe_zone) for _ in range(self.n_agents)]
+        self.runners = [Runner(center_coord.copy(), self.safe_zone, self.leaves) for _ in range(self.n_agents)]
 
     def get_observations(self) -> List[Observation]:
         """
@@ -133,6 +138,7 @@ class MazeRunnerEnv(gym.Env):
             Observation(
                 explored=runner.explored.copy(),
                 known_maze=runner.known_maze.copy(),
+                known_leaves=runner.known_leaves.copy(),
                 safe_zone=self.safe_zone,
                 runner_location=(runner.location[0], runner.location[1]),
                 time_till_end_of_day=self.day_length - (self.time % self.day_length) - 1,
