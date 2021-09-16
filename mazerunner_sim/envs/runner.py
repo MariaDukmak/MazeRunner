@@ -9,7 +9,7 @@ class Runner:
     The runner class for in the maze environment.
     """
 
-    def __init__(self, start_location: np.array, map_shape: Tuple[int, int]):
+    def __init__(self, start_location: np.array, safe_zone: np.array):
         """
         Initialize a Runner.
 
@@ -17,8 +17,8 @@ class Runner:
         """
         self.location = start_location
         self.alive = True
-        self.explored = np.zeros(map_shape, dtype=bool)
-        self.known_maze = np.zeros(map_shape, dtype=bool)
+        self.explored = safe_zone.copy()
+        self.known_maze = safe_zone.copy()
 
     def update_map(self, sensor_input: np.array):
         """

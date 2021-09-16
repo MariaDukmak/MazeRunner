@@ -26,6 +26,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
     # Modified from https://github.com/ravenkls/Maze-Generator-and-Solver/blob/master/maze_generator.py
     pixels = np.zeros((2 * size + 1, 2 * size + 1), dtype=bool)
     pixels[size - center_size + 1:size + center_size, size - center_size + 1:size + center_size] = True
+    safe_zone = pixels.copy()
 
     # Creating exit
     random_height = randint(1, size * 2 - 1)
@@ -38,7 +39,6 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
     pixels[exit_x, exit_y] = True
     pixels[exit_x + offset_x, exit_y + offset_y] = True
 
-    safe_zone = pixels.copy()
 
     stack = LifoQueue()
     cells = np.zeros((size, size), dtype=bool)

@@ -4,7 +4,7 @@ from mazerunner_sim.agents import PureRandomAgent
 from mazerunner_sim.envs import MazeRunnerEnv
 
 
-env = MazeRunnerEnv(n_agents=2, day_length=10000)
+env = MazeRunnerEnv(n_agents=5, day_length=1000)
 agents = [PureRandomAgent() for _ in range(env.n_agents)]
 
 run_simulation(env, agents, wait_key=100, follow_runner_id=0)

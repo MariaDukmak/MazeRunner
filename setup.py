@@ -5,7 +5,6 @@ install_requires = [
     'numpy',
     'Pillow',
     'opencv-python',
-    'pathfinding',
 ]
 
 setup(

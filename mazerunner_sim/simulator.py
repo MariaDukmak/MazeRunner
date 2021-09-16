@@ -35,6 +35,7 @@ def run_simulation(env: MazeRunnerEnv,
 
         # Let the actions take place in the environment
         observations, reward, done, info = env.step(actions)
+        print(observations[0].time_till_end_of_day)
 
         total_reward += reward
 

@@ -22,8 +22,7 @@ from functools import reduce
 class MazeRunnerEnv(gym.Env):
     """OpenAI gym environment for the MazeRunner."""
 
-    # 4 possible actions: 0:Up, 1:Down, 2:Left, 3:Right
-    action_space = gym.spaces.Discrete(4)
+    action_space = gym.spaces.Discrete(5)
     metadata = {'render.modes': ['human']}
 
     done: bool
@@ -66,7 +65,8 @@ class MazeRunnerEnv(gym.Env):
                 step = np.array([[0, -1],
                                  [0, 1],
                                  [-1, 0],
-                                 [1, 0]][action])
+                                 [1, 0],
+                                 [0, 0]][action])
                 # if the step is actually possible, take the step # TODO add extra code for checking if space is accupied
                 if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
@@ -76,22 +76,11 @@ class MazeRunnerEnv(gym.Env):
             if r.alive:
                 r.update_map(self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2])
 
-        # At the end of the day
+        # Kill the runners that are still in the maze at the end of the day
         if self.time % self.day_length == 0:
-            # kill the ones still in the maze
             for runner in self.runners:
                 if not self.safe_zone[tuple(runner.location)]:
                     runner.alive = False
-            # share memory map between those still alive
-            combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
-            combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
-            for runner in self.runners:
-                if runner.alive:
-                    runner.explored = combined_explored_map.copy()
-                    runner.known_maze = combined_maze_map.copy()
-
-        # Observations
-        observations = self.get_observations()
 
         # Reward & done
         reward = -1
@@ -105,6 +94,18 @@ class MazeRunnerEnv(gym.Env):
             self.done = True
             reward -= self.DEATH_PUNISHMENT + self.total_rewards_given
         self.total_rewards_given += reward
+
+        # Share memory map between those still alive at the end of the day
+        if self.time % self.day_length == 0 and not self.done:
+            combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
+            combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
+            for runner in self.runners:
+                if runner.alive:
+                    runner.explored = combined_explored_map.copy()
+                    runner.known_maze = combined_maze_map.copy()
+
+        # Observations
+        observations = self.get_observations()
 
         return observations, reward, self.done, {}
 
@@ -120,7 +121,7 @@ class MazeRunnerEnv(gym.Env):
         self.total_rewards_given = 0.
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
-        self.runners = [Runner(center_coord.copy(), self.maze.shape) for _ in range(self.n_agents)]
+        self.runners = [Runner(center_coord.copy(), self.safe_zone) for _ in range(self.n_agents)]
 
     def get_observations(self) -> List[Observation]:
         """
