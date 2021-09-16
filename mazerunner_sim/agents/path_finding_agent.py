@@ -27,6 +27,11 @@ def explorable_tiles(known_maze: np.array, explored: np.array) -> List[Coord]:
             ]
 
 
+def clip_retreat_path(safe_zone: np.array, path: List[Coord]) -> List[Coord]:
+    clipped = [(x, y) for x, y in path if not safe_zone[y, x]]
+    return clipped + [path[len(clipped)]]
+
+
 class PathFindingAgent(Agent):
     """Semi-random agent, that goes back in time using pathfinding."""
     def __init__(self):
@@ -41,6 +46,7 @@ class PathFindingAgent(Agent):
             center = observation.known_maze.shape[1] // 2, observation.known_maze.shape[0] // 2
             *target_paths, center_path = steps_to_targets(observation.runner_location, explore_tiles+[center], observation.known_maze)
             retreat_paths = steps_to_targets(center, explore_tiles, observation.known_maze)
+            *retreat_paths, center_path = [clip_retreat_path(observation.safe_zone, p) for p in retreat_paths + [center_path]]
 
             target_validation_mask = [len(tp) + len(tcp) <= observation.time_till_end_of_day for tp, tcp in zip(target_paths, retreat_paths)]
             if sum(target_validation_mask) > 0:
@@ -55,7 +61,8 @@ class PathFindingAgent(Agent):
                 self.planned_path.extend(best_paths[np.random.randint(len(best_paths))])
             else:
                 self.planned_path.extend(center_path)
-                self.planned_path.extend([center]*(observation.time_till_end_of_day - len(center_path)))
+                wait_place = center_path[-1] if len(center_path) > 0 else observation.runner_location
+                self.planned_path.extend([wait_place]*(observation.time_till_end_of_day+1 - len(center_path)))
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)

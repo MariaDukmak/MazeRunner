@@ -16,6 +16,7 @@ class Observation(NamedTuple):
     An observation consist of the following thing:
         explored: map of booleans the size of the entire maze, True means explored, False means not explored
         known_maze: map of booleans the size of the entire maze, True means open to walk, False means a wall or unexplored
+        safe_zone: map of booleans the size of the entire maze, True means safe to be at the end of the day
         runner_location: Coordinate location of the runner (x, y)
         time_till_end_of_day: Time till the end of the day, decreases from `day_length` to 0
 
@@ -23,6 +24,7 @@ class Observation(NamedTuple):
     """
     explored: np.array
     known_maze: np.array
+    safe_zone: np.array
     runner_location: Tuple[int, int]
     time_till_end_of_day: int
 

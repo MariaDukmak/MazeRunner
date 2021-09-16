@@ -133,6 +133,7 @@ class MazeRunnerEnv(gym.Env):
             Observation(
                 explored=runner.explored.copy(),
                 known_maze=runner.known_maze.copy(),
+                safe_zone=self.safe_zone,
                 runner_location=(runner.location[0], runner.location[1]),
                 time_till_end_of_day=self.day_length - (self.time % self.day_length) - 1,
             )
