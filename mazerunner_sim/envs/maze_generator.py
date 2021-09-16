@@ -37,8 +37,8 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.ar
         [random_height, size * 2, 0, -1],  # bottom side
         [random_height, 0, 0, 1]  # top side
     ])
-    pixels[exit_x, exit_y] = True
-    pixels[exit_x + offset_x, exit_y + offset_y] = True
+    pixels[exit_y, exit_x] = True
+    pixels[exit_y + offset_y, exit_x + offset_x] = True
 
     stack = LifoQueue()
     cells = np.zeros((size, size), dtype=bool)
@@ -84,7 +84,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.ar
         for x in range(leaves.shape[1]):
             if pixels[y, x]:
                 leaves[y, x] = manhattan_distance((x, y), (exit_x, exit_y))
-    leaves = np.random.rand(*leaves.shape) < leaves / (np.max(leaves) * 2)
+    leaves = np.random.rand(*leaves.shape) > leaves**.8 / (np.max(leaves**.8) / 1.05)
 
     return pixels, safe_zone, leaves
 
