@@ -1,4 +1,5 @@
 """This file contains code to render a maze."""
+import copy
 
 from pathlib import Path
 
@@ -24,12 +25,44 @@ def render_background(maze: np.array, leaves: np.array) -> Image:
     path = Image.open(textures_path / "dirt.png")
     leaf = Image.open(textures_path / "leaf.png")
 
+    # Declare walls with directions
+    # Corners
+    wall_zw = Image.open(textures_path / "tile_corner.png")  # ↴
+    wall_no = copy.deepcopy(wall_zw).rotate(180)             # ↳
+    wall_nw = copy.deepcopy(wall_zw).rotate(270)             # ↵
+    wall_zo = copy.deepcopy(wall_zw).rotate(90)              # ↱
+
+    # Ends
+    wall_w = Image.open(textures_path / "tile_end.png")    # ←
+    wall_n = copy.deepcopy(wall_w).rotate(270)             # ↑
+    wall_o = copy.deepcopy(wall_w).rotate(180)             # →
+    wall_z = copy.deepcopy(wall_w).rotate(90)              # ↓
+
+    # Straight
+    wall_ow = Image.open(textures_path / "tile_straight.png")   # ⇄
+    wall_nz = copy.deepcopy(wall_ow).rotate(90)                 # ⇅
+
+    # T-cross
+    wall_ozw = Image.open(textures_path / "tile_tcross.png")   # ▽
+    wall_now = copy.deepcopy(wall_ozw).rotate(180)              # △
+    wall_noz = copy.deepcopy(wall_ozw).rotate(90)              # ▷
+    wall_nzw = copy.deepcopy(wall_ozw).rotate(270)              # ◁
+
+    # Cross
+    wall_nozw = Image.open(textures_path / "tile_cross.png")  # +
+
+    # Full block
+    wall_solid = Image.open(textures_path / "tile_solid.png")  # +
+
     # Get width and height of the walls
     tile_size_width, tile_size_height = walls.size
 
     # Calculate canvas size of the maze
     width = maze.shape[0] * tile_size_width
     height = maze.shape[1] * tile_size_height
+
+    # Get maze grind size
+    maze_width, maze_height = maze.shape
 
     # Create canvas
     background = Image.new(mode="RGB", size=(width, height))
@@ -43,7 +76,91 @@ def render_background(maze: np.array, leaves: np.array) -> Image:
                 else:
                     texture = path
             else:
-                texture = walls
+                # Borders
+                # Conners
+                # Top left
+                if height_row == 0 and index == 0 and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index]:
+                    texture = wall_zo
+                # Top right
+                elif height_row == 0 and index == maze_width - 1 and not maze[height_row, max(index - 1, 0)] and not maze[min(height_row + 1, maze_height-1), index]:
+                    texture = wall_zw
+                # Bottom left
+                elif height_row == maze_height - 1 and index == 0 and not maze[height_row, max(index - 1, 0)] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_no
+                # Bottom right
+                elif height_row == maze_height -1 and index == maze_width -1 and not maze[height_row, max(index - 1, 0)] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nw
+
+                # Top side
+                elif height_row == 0 and not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index]:
+                    texture = wall_ozw
+                elif height_row == 0 and not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)]:
+                    texture = wall_ow
+
+                # Left side
+                elif index == 0 and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_noz
+                elif index == 0 and maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nz
+
+                # Right side
+                elif index == maze_width - 1 and not maze[height_row, max(index - 1, 0)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nzw
+                elif index == maze_width - 1 and maze[height_row, max(index - 1, 0)]and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nz
+
+                # Bottom row
+                elif height_row == maze_height - 1 and not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_now
+                elif height_row == maze_height - 1 and not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_ow
+
+                # Corners
+                elif not maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width-1)] and not maze[min(height_row + 1, maze_height-1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_zw
+                elif maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width-1)] and maze[min(height_row + 1, maze_height-1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_no
+                elif not maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nw
+                elif maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_zo
+
+                # Cross
+                elif not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nozw
+
+                # Endings
+                elif not maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_w
+                elif maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_n
+                elif maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_o
+                elif maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_z
+
+                # Straights
+                elif not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_ow
+                elif maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nz
+
+                # T crosses
+                elif not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_ozw
+                elif not maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_now
+                elif maze[height_row, max(index - 1, 0)] and not maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_noz
+                elif not maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and not maze[min(height_row + 1, maze_height - 1), index] and not maze[max(height_row - 1, 0), index]:
+                    texture = wall_nzw
+
+                # Solid
+                elif maze[height_row, max(index - 1, 0)] and maze[height_row, min(index + 1, maze_width - 1)] and maze[min(height_row + 1, maze_height - 1), index] and maze[max(height_row - 1, 0), index]:
+                    texture = wall_solid
+
+                else:
+                    texture = walls
             background.paste(texture, (index * tile_size_width, height_row * tile_size_height))
 
     return background
