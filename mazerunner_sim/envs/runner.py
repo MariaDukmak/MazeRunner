@@ -1,13 +1,10 @@
 """The Runner class."""
-from typing import Tuple
 
 import numpy as np
 
 
 class Runner:
-    """
-    The runner class for in the maze environment.
-    """
+    """The runner class for in the maze environment."""
 
     def __init__(self, start_location: np.array, safe_zone: np.array, leaves: np.array):
         """
@@ -25,7 +22,7 @@ class Runner:
         """
         Update the locally known maps.
 
-        :param leaves_input:
+        :param leaves_input: 3x3 block of booleans surrounding the runner where False is no leaf and True is a leaf
         :param maze_input: 3x3 block of booleans surrounding the runner where False is a wall and True is an open space
         """
         x, y = self.location

@@ -1,7 +1,7 @@
 """
 Observations and actions are the most basic information flow in an agent system.
-An agent takes an action, the environment uses that action to update and returns a new observation, rinse and repeat.
 
+An agent takes an action, the environment uses that action to update and returns a new observation, rinse and repeat.
 Observations and actions are just data containers.
 """
 
@@ -22,6 +22,7 @@ class Observation(NamedTuple):
 
     This can be expanded to have more observation parameters in the future as the simulation development continuous.
     """
+
     explored: np.array
     known_maze: np.array
     known_leaves: np.array
@@ -32,6 +33,7 @@ class Observation(NamedTuple):
 
 class Action(int):
     """An action in the MazeRunner environment is just an integer between 0 and 3."""
+
     UP = 0
     DOWN = 1
     LEFT = 2
