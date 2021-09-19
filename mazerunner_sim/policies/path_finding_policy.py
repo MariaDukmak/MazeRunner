@@ -69,20 +69,20 @@ class PathFindingPolicy(BasePolicy):
             explorable_tiles = find_edge_of_knowledge_tiles(observation.known_maze, observation.explored)
 
             center = observation.known_maze.shape[1] // 2, observation.known_maze.shape[0] // 2
-            *target_paths, center_path = paths_origin_targets(observation.runner_location, explorable_tiles + [center], observation.known_maze)
+            *explore_paths, center_path = paths_origin_targets(observation.runner_location, explorable_tiles + [center], observation.known_maze)
             retreat_paths = paths_origin_targets(center, explorable_tiles, observation.known_maze)
             *retreat_paths, center_path = [clip_retreat_path(observation.safe_zone, p) for p in retreat_paths + [center_path]]
 
-            target_validation_mask = [len(tp) + len(tcp) <= observation.time_till_end_of_day for tp, tcp in zip(target_paths, retreat_paths)]
+            target_validation_mask = [len(tp) + len(tcp) <= observation.time_till_end_of_day for tp, tcp in zip(explore_paths, retreat_paths)]
             if sum(target_validation_mask) > 0:
                 explorable_tiles = [x for x, valid in zip(explorable_tiles, target_validation_mask) if valid]
-                target_paths = [x for x, valid in zip(target_paths, target_validation_mask) if valid]
+                explore_paths = [x for x, valid in zip(explore_paths, target_validation_mask) if valid]
                 tile_scores = [
                     min(x, map_width - x, y, map_height - y) + len(target_path)
-                    for (x, y), target_path in zip(explorable_tiles, target_paths)
+                    for (x, y), target_path in zip(explorable_tiles, explore_paths)
                 ]
 
-                best_paths = [path for path, score in zip(target_paths, tile_scores) if score == min(tile_scores)]
+                best_paths = [path for path, score in zip(explore_paths, tile_scores) if score == min(tile_scores)]
                 self.planned_path.extend(best_paths[np.random.randint(len(best_paths))])
             else:
                 self.planned_path.extend(center_path)

@@ -10,7 +10,7 @@ import numpy as np
 
 
 def run_simulation(env: MazeRunnerEnv,
-                   agents: List[BasePolicy],
+                   policies: List[BasePolicy],
                    window_name: Union[str, None] = 'MazeRunner Simulation',
                    wait_key: int = 10,
                    follow_runner_id: int = None) -> float:
@@ -18,7 +18,7 @@ def run_simulation(env: MazeRunnerEnv,
     Run the simulation with given parameters.
 
     :param env: Environment used for the simulation
-    :param agents: List of policies used in the experiments
+    :param policies: List of policies used in the experiments
     :param window_name: Name used for the simulation, don't visualize when window_name is None
     :param wait_key: Time in milliseconds used as interval for displaying steps
     :param follow_runner_id: Id used to follow runner
@@ -32,7 +32,7 @@ def run_simulation(env: MazeRunnerEnv,
 
     while not done:
         # For every agent, decide an action according to the observation
-        actions = [agent.decide_action(observation) for agent, observation in zip(agents, observations)]
+        actions = [policy.decide_action(observation) for policy, observation in zip(policies, observations)]
 
         # Let the actions take place in the environment
         observations, reward, done, info = env.step(actions)

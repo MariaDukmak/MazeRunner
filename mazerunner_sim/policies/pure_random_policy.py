@@ -5,7 +5,7 @@ from mazerunner_sim.observation_and_action import Observation, Action
 import numpy as np
 
 
-class PureRandomAgent(BasePolicy):
+class PureRandomPolicy(BasePolicy):
     """Create pure random agent."""
 
     def decide_action(self, observation: Observation) -> Action:
