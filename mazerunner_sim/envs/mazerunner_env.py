@@ -32,19 +32,19 @@ class MazeRunnerEnv(gym.Env):
 
     DEATH_PUNISHMENT = 99999
 
-    def __init__(self, maze_size: int = 16, center_size: int = 4, n_agents: int = 1, day_length: int = 20):
+    def __init__(self, maze_size: int = 16, center_size: int = 4, n_runners: int = 1, day_length: int = 20):
         """
         Initialize the MazeRunner environment.
 
         :param maze_size: Size of the maze
         :param center_size: Size of the glade (center)
-        :param n_agents: Number of agents, results in the number of runners
+        :param n_runners: Number of runners
         :param day_length: Length of a day, at the end of the day, all the runners not in a safe spot are going to a better place
         """
         super(MazeRunnerEnv, self).__init__()
         self.maze, self.safe_zone, self.leaves = generate_maze(maze_size, center_size)
         self.day_length = day_length
-        self.n_agents = n_agents
+        self.n_runners = n_runners
         self.reset()
 
         self.rendered_background = render_background(self.maze, self.leaves, self.safe_zone)
@@ -119,14 +119,14 @@ class MazeRunnerEnv(gym.Env):
         Reset the environment.
 
         The maze stays the same, so does the number of runners and the day-length,
-        but the agents are reset, the time and the `done` flag.
+        but the policies are reset, the time and the `done` flag.
         """
         self.done = False
         self.time = 0
         self.total_rewards_given = 0.
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
-        self.runners = [Runner(center_coord.copy(), self.safe_zone, self.leaves) for _ in range(self.n_agents)]
+        self.runners = [Runner(center_coord.copy(), self.safe_zone, self.leaves) for _ in range(self.n_runners)]
 
     def get_observations(self) -> List[Observation]:
         """

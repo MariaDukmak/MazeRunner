@@ -3,7 +3,7 @@
 from typing import List
 import numpy as np
 
-from mazerunner_sim.agents import Agent
+from mazerunner_sim.policies import BasePolicy
 from mazerunner_sim.observation_and_action import Observation, Action
 from mazerunner_sim.utils.pathfinder import Coord, steps_to_targets
 
@@ -32,7 +32,7 @@ def clip_retreat_path(safe_zone: np.array, path: List[Coord]) -> List[Coord]:
     return clipped + [path[len(clipped)]]
 
 
-class PathFindingAgent(Agent):
+class PathFindingAgent(BasePolicy):
     """Semi-random agent, that goes back in time using pathfinding."""
     def __init__(self):
         self.planned_path = []

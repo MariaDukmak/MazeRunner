@@ -11,7 +11,7 @@ import numpy as np
 
 class Observation(NamedTuple):
     """
-    The Maze Runner environment returns observations, agents need this to make decisions.
+    The Maze Runner environment returns observations, policies need this to make decisions.
 
     An observation consist of the following thing:
         explored: map of booleans the size of the entire maze, True means explored, False means not explored

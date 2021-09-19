@@ -1,10 +1,10 @@
-"""Class file for making agents."""
+"""Class file for making policies."""
 import abc
 
 from mazerunner_sim.observation_and_action import Observation, Action
 
 
-class Agent(metaclass=abc.ABCMeta):
+class BasePolicy(metaclass=abc.ABCMeta):
     """
     Most generic agent class.
 
