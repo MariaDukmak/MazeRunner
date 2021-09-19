@@ -47,7 +47,7 @@ class MazeRunnerEnv(gym.Env):
         self.n_agents = n_agents
         self.reset()
 
-        self.rendered_background = render_background(self.maze, self.leaves)
+        self.rendered_background = render_background(self.maze, self.leaves, self.safe_zone)
 
     def step(self, actions: List[Action]) -> Tuple[List[Observation], float, bool, dict]:
         """
