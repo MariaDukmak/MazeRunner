@@ -12,10 +12,11 @@ from typing import Tuple
 from PIL import Image
 
 import numpy as np
-import numpy.typing as npt
+
+from mazerunner_sim.utils.pathfinder import manhattan_distance
 
 
-def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, npt.NDArray]:
+def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.array, np.array]:
     """
     Generate maze.
 
@@ -26,6 +27,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
     # Modified from https://github.com/ravenkls/Maze-Generator-and-Solver/blob/master/maze_generator.py
     pixels = np.zeros((2 * size + 1, 2 * size + 1), dtype=bool)
     pixels[size - center_size + 1:size + center_size, size - center_size + 1:size + center_size] = True
+    safe_zone = pixels.copy()
 
     # Creating exit
     random_height = randint(1, size * 2 - 1)
@@ -35,10 +37,8 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
         [random_height, size * 2, 0, -1],  # bottom side
         [random_height, 0, 0, 1]  # top side
     ])
-    pixels[exit_x, exit_y] = True
-    pixels[exit_x + offset_x, exit_y + offset_y] = True
-
-    safe_zone = pixels.copy()
+    pixels[exit_y, exit_x] = True
+    pixels[exit_y + offset_y, exit_x + offset_x] = True
 
     stack = LifoQueue()
     cells = np.zeros((size, size), dtype=bool)
@@ -78,7 +78,15 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[npt.NDArray, np
         pixels[size + center_size * x_b, size + center_size * y_b] = True
         pixels[size + (center_size + 1) * x_b, size + (center_size + 1) * y_b] = True
 
-    return pixels, safe_zone
+    # Leaves
+    leaves = np.zeros((2 * size + 1, 2 * size + 1), dtype=float)
+    for y in range(leaves.shape[0]):
+        for x in range(leaves.shape[1]):
+            if pixels[y, x]:
+                leaves[y, x] = manhattan_distance((x, y), (exit_x, exit_y))
+    leaves = np.random.rand(*leaves.shape) > leaves**.8 / (np.max(leaves**.8) / 1.05)
+
+    return pixels, safe_zone, leaves
 
 
 if __name__ == '__main__':
