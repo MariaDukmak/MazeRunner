@@ -8,7 +8,7 @@ import gym
 
 from mazerunner_sim.envs.maze_generator import generate_maze
 
-from mazerunner_sim.envs.maze_render import render_agent_in_step, render_background
+from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, render_background
 
 from mazerunner_sim.envs.runner import Runner
 

@@ -3,7 +3,7 @@ import copy
 
 from pathlib import Path
 
-from typing import List
+from typing import List, Union
 
 from PIL import Image
 
@@ -19,6 +19,8 @@ def render_background(maze: np.array, leaves: np.array, safe_zone: np.array) -> 
     Render the maze and save it if specified.
 
     :param maze: Maze from generate maze function in np 2D array
+    :param leaves:
+    :param safe_zone:
     """
     # Declare with images used for walls and path
     walls = Image.open(textures_path / "stonebrick.png")
@@ -169,12 +171,14 @@ def render_background(maze: np.array, leaves: np.array, safe_zone: np.array) -> 
                     texture = walls
             background.paste(texture, (index * tile_size_width, height_row * tile_size_height), texture)
             if safe_zone[height_row, index]:
-                background.paste(safe_zone_texture, (index * tile_size_width, height_row * tile_size_height), safe_zone_texture)
+                background.paste(safe_zone_texture, (index * tile_size_width, height_row * tile_size_height),
+                                 safe_zone_texture)
 
     return background
 
 
-def render_agent_in_step(maze_information: np.array, background_image: Image, runners: List[Runner], render_agent_id: int = None) -> Image:
+def render_agent_in_step(maze_information: np.array, background_image: Image, runners: List[Runner],
+                         render_agent_id: Union[int, None] = None) -> Image:
     """
     Render all agents from step.
 
@@ -224,7 +228,6 @@ def render_explored_maze(background_image: Image, runner: Runner) -> Image:
     """
     Render explored maze attribute from runner.
 
-    :param maze_information: Information about the maze
     :param background_image: Rendered background from maze information
     :param runner: Runner used for rendering
     :return: Returns image of current step
