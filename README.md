@@ -3,14 +3,13 @@
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 
 
-
-Git repo voor de challenges van het vak Autonomy By Design.
+This git repository houses the challenges for the course *Autonomy By Design*.
 
 ### [Jira Scrumboard](https://fancymazerunner.atlassian.net/jira/software/projects/DOOL/boards/1)
 
-### Uitleg simulatie 
-De simulatie bestaat uit twee onderdelen, dat zijn de `Environment` en de  `Agent`. 
-Hieronder kan je zien hoe de simulatie ongeveer in elkaar zit:
+### Introduction Simulation
+The simulation is made out of two parts, the `Environment` and the `Policy`.
+The image below illustrates the simulation loop:
 
 ![](https://github.com/MariaDukmak/MazeRunner/blob/Readme-uitwerken/images/schets_simulatie.png)
 
