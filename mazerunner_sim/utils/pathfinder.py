@@ -46,12 +46,14 @@ def traceback_visited(visited_tree: Dict[Coord, Coord], end: Coord, origin: Coor
     path.reverse()
     return path
 
-def check_boundary(maze: np.array, next_tile: np.array):
+
+def check_boundary(maze: np.array, next_tile: np.array) -> bool:
     """
-    Check if next tile lays within maze boundarys
+    Check if next tile lays within maze boundaries.
 
     :param maze: a 2D boolean array where True means walkable tile and False means a wall
     :param next_tile: ...
+    :return: false if out of bounds, true if inbounds
     """
     boundery = range(0, maze.shape[0] - 1)
 
@@ -88,16 +90,15 @@ def paths_origin_targets(origin: Coord, targets: List[Coord], maze: np.array) ->
     q = PriorityQueue()
     q.put((0, origin))
 
-
-
     # Dijkstra to all the targets, until one target is left
     while len(targets_togo) > 1:
         priority, tile = q.get()
+
+        if not check_boundary(maze, tile):
+            continue
+
         for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
             next_tile = tile[0] + dx, tile[1] + dy
-
-            if not check_boundary(maze, next_tile):
-                break
 
             if maze[next_tile[1], next_tile[0]] and next_tile not in visited_tree:
                 q.put((priority + 1, next_tile))
@@ -115,6 +116,10 @@ def paths_origin_targets(origin: Coord, targets: List[Coord], maze: np.array) ->
     # A* for the last target for better efficiency
     while not done:
         _, tile = q.get()
+
+        if not check_boundary(maze, tile):
+            continue
+
         for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
             next_tile = tile[0] + dx, tile[1] + dy
             if maze[next_tile[1], next_tile[0]] and next_tile not in visited_tree:
