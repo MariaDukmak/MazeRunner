@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+import setuptools
 
 install_requires = [
     'gym',
@@ -7,12 +7,24 @@ install_requires = [
     'opencv-python',
 ]
 
-setup(
+extras = {
+    "dev": [
+        'flake8',
+        'flake8-blind-except',
+        "flake8-builtins",
+        "flake8-docstrings",
+        "flake8-logging-format",
+        "mypy",
+        "pytest"]
+}
+
+setuptools.setup(
     name='fancymazerunner',
     description='A fancymazerunner agent based simulation',
     version='0.0.1',
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
     install_requires=install_requires,
+    extras_require=extras,
     python_requires='>=3.6',
     author='Maria Dukmak',
     author_email='Maria.dukmak@student.hu.nl',
