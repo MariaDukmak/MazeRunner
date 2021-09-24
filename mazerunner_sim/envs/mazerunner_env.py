@@ -112,7 +112,7 @@ class MazeRunnerEnv(gym.Env):
         # Observations
         observations = self.get_observations()
 
-        return observations, reward, self.done, {}
+        return observations, reward, self.done, self.get_info()
 
     def reset(self):
         """
