@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
-from mazerunner_sim.observation_and_action import Observation, Action
+from mazerunner_sim.utils.observation_and_action import Observation, Action
 from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets
 
 

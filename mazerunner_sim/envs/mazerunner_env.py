@@ -12,7 +12,7 @@ from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, 
 
 from mazerunner_sim.envs.runner import Runner
 
-from mazerunner_sim.observation_and_action import Observation, Action
+from mazerunner_sim.utils.observation_and_action import Observation, Action
 
 import numpy as np
 
@@ -154,3 +154,13 @@ class MazeRunnerEnv(gym.Env):
         :param mode: Mode of rendering, choose between: ['human']
         """
         return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
+
+    def get_info(self) -> dict:
+        """
+        Get the environment and the agents info. Needed for the batch run.
+        """
+        return {
+            'time': self.time,
+            'agents_n': len(self.runners),
+            'explored': [r.explored for r in self.runners],
+        }
