@@ -13,3 +13,16 @@ De simulatie bestaat uit twee onderdelen, dat zijn de `Environment` en de  `Agen
 Hieronder kan je zien hoe de simulatie ongeveer in elkaar zit:
 
 ![](https://github.com/MariaDukmak/MazeRunner/blob/Readme-uitwerken/images/schets_simulatie.png)
+
+
+### Installation
+To install the package run the following command: 
+```bash 
+pip install .
+```
+
+If you are a developer you need to run this command:
+```bash 
+pip install .[dev]
+```
+
