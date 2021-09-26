@@ -3,7 +3,6 @@ from mazerunner_sim import run_simulation
 from mazerunner_sim.policies import PureRandomPolicy
 from mazerunner_sim.envs import MazeRunnerEnv
 
-
 env = MazeRunnerEnv(n_runners=5, day_length=1000)
 agents = [PureRandomPolicy() for _ in range(env.n_runners)]
 
