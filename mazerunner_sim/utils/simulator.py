@@ -22,12 +22,12 @@ def run_simulation(env: MazeRunnerEnv,
     :param window_name: Name used for the simulation, don't visualize when window_name is None
     :param wait_key: Time in milliseconds used as interval for displaying steps
     :param follow_runner_id: Id used to follow runner
-    :return: Total reward gotten
+    :return: The collected stats/info from each step
     """
     done = False
     total_reward = 0
     visualize = window_name is not None
-    stats_log = []
+    collected_info = []
 
     observations = env.get_observations()
 
@@ -37,8 +37,7 @@ def run_simulation(env: MazeRunnerEnv,
 
         # Let the actions take place in the environment
         observations, reward, done, info = env.step(actions)
-        stats_log.append(info)
-        print(f"Time till end of day: {observations[0].time_till_end_of_day}")
+        collected_info.append(info)
 
         total_reward += reward
 
@@ -59,4 +58,4 @@ def run_simulation(env: MazeRunnerEnv,
     if visualize:
         cv2.destroyAllWindows()
 
-    return stats_log
+    return collected_info
