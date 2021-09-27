@@ -1,4 +1,5 @@
 """Batch runner function."""
+from typing import Union
 from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
 from mazerunner_sim.policies.pure_random_policy import PureRandomPolicy
 from mazerunner_sim.policies.path_finding_policy import PathFindingPolicy
@@ -13,11 +14,12 @@ from typing import List
 data_path = '../../experiments/'
 
 
-def batch_runner(n_runners: int = 5,
+def batch_runner(policies: List[BasePolicy],
                  day_length: int = 1000,
                  n_env: int = 1,
-                 policy: List[BasePolicy] = PureRandomPolicy) -> List[dict]:
+                 env: Union[MazeRunnerEnv, None] = None) -> List[dict]:
 
+    available_processors = cpu_count()
     # Maak env aan, meerdere kan ook
     with Pool(n_env) as pool:
         for en in range(n_env):

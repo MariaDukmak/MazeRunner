@@ -93,3 +93,7 @@ class PathFindingPolicy(BasePolicy):
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)
+
+    def reset(self):
+        """Reset the planned path of the policy."""
+        self.planned_path = []
