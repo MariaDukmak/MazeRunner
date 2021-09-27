@@ -4,13 +4,13 @@ from mazerunner_sim.policies.pure_random_policy import PureRandomPolicy
 from mazerunner_sim.policies.path_finding_policy import PathFindingPolicy
 from mazerunner_sim.utils.simulator import run_simulation
 from mazerunner_sim.policies import BasePolicy
+from multiprocessing import Pool, Process, cpu_count
 
+import copy
 import pickle
 from typing import List
 
 data_path = '../../experiments/'
-
-# TODO: fix deze functie dat er meerder env worden aangemaakt met meerdere polices
 
 
 def batch_runner(n_runners: int = 5,
@@ -19,19 +19,40 @@ def batch_runner(n_runners: int = 5,
                  policy: List[BasePolicy] = PureRandomPolicy) -> List[dict]:
 
     # Maak env aan, meerdere kan ook
-    for en in range(n_env):
-        env = MazeRunnerEnv(n_runners=n_runners, day_length=day_length)
-
-    # Maak policy aan, meerdere kan ook
-    # for p in policy:
-    policies = [policy() for _ in range(env.n_runners)]
+    with Pool(n_env) as pool:
+        for en in range(n_env):
+            env = MazeRunnerEnv(n_runners=len(policies), day_length=day_length)
 
     # Run simulatie
-    data = run_simulation(env, policies, window_name=None, wait_key=100, follow_runner_id=0)
+    # data = run_simulation(env, policies, window_name=None, wait_key=100, follow_runner_id=0)
 
-    return data
+    # return data
 
 
 def export_batch(data: List[dict], file_name: str = 'batch_data.p') -> None:
     """Save the data into a pickle file."""
     pickle.dump(data, open(f'{data_path + file_name}', 'wb'))
+
+
+#
+# ### een schets :))
+#
+# def make_simulation_args():
+#     """
+#     Prepare all combinations of parameter values for `batch_run`
+#
+#     Returns:Tuple with the form: (total_iterations, all_kwargs, all_param_values)
+#     """
+#
+#     total_iterations = ...
+#     instellingen_list = ...
+#     all_kwargs = []
+#     fixed_parameters = None
+#
+#     count = len(instellingen_list)
+#     if count:
+#         for instelling in instellingen_list:
+#             kwarg = instelling.copy()
+#             kwarg.update(fixed_parameters)
+#
+#

@@ -15,3 +15,7 @@ class BasePolicy(metaclass=abc.ABCMeta):
     def decide_action(self, observation: Observation) -> Action:
         """Take an action based on the given observation."""
         raise NotImplementedError
+
+    def reset(self):
+        """Reset the policy."""
+        pass
