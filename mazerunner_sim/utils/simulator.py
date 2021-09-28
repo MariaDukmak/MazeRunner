@@ -33,7 +33,7 @@ def run_simulation(env: MazeRunnerEnv,
 
     while not done:
         # For every agent, decide an action according to the observation
-        actions = [policy.decide_action(observation) for policy, observation in zip(policies, observations)]
+        actions = {runner_id: policies[runner_id].decide_action(observation) for runner_id, observation in observations.items()}
 
         # Let the actions take place in the environment
         observations, reward, done, info = env.step(actions)
