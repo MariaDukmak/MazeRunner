@@ -5,6 +5,7 @@ import numpy as np
 
 class Runner:
     """The runner class for in the maze environment."""
+
     location: np.array
     alive: bool
     explored: np.array
@@ -17,7 +18,6 @@ class Runner:
 
         :param start_location: Numpy vector with shape [2], it's x and y coordinate.
         """
-
         self.action_speed = action_speed  # Base speed
         self.action_wait_time = self.action_speed  # Current speed in a step
 
@@ -43,6 +43,7 @@ class Runner:
             return False
 
     def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array):
+        """Reset the status of the agent."""
         self.location = start_location
         self.alive = True
         self.explored = safe_zone.copy()
