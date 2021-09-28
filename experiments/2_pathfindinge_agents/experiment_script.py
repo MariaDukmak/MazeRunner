@@ -1,4 +1,5 @@
 """
+
 Run a batch experiment with two pathfinding runners,
 a day-length of 300,
 a maze-size of 10.

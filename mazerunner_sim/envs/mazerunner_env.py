@@ -160,9 +160,7 @@ class MazeRunnerEnv(gym.Env):
         return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
 
     def get_info(self) -> dict:
-        """
-        Get the environment and the agents info. Needed for the batch run.
-        """
+        """Get the environment and the agents info. Needed for the batch run."""
         return {
             'time': self.time,
             'agents_n': len(self.runners),
