@@ -5,6 +5,9 @@ install_requires = [
     'numpy',
     'Pillow',
     'opencv-python',
+    'matplotlib',
+    'seaborn',
+    'pandas'
 ]
 
 extras = {
