@@ -6,6 +6,7 @@ Observations and actions are just data containers.
 """
 
 from typing import NamedTuple, Tuple
+
 import numpy as np
 
 

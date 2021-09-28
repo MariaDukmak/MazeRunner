@@ -7,7 +7,7 @@ from typing import List, Union
 
 from PIL import Image
 
-from mazerunner_sim.envs.runner import Runner
+from mazerunner_sim.envs.agents.runner import Runner
 
 import numpy as np
 

@@ -1,6 +1,6 @@
 """Module containing some useful functions for pathfinding."""
 
-from typing import Tuple, List, Callable, Dict
+from typing import Callable, Dict, List, Tuple
 from queue import PriorityQueue
 
 import numpy as np

@@ -1,6 +1,7 @@
 """Policy that uses pathfinding."""
 
 from typing import List
+
 import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
