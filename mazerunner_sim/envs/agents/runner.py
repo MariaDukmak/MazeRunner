@@ -16,12 +16,12 @@ class Runner:
         """
         Initialize a Runner.
 
-        :param start_location: Numpy vector with shape [2], it's x and y coordinate.
+        :param action_speed: Runner speed in the simulation.
         """
         self.action_speed = action_speed  # Base speed
         self.action_wait_time = self.action_speed  # Current speed in a step
 
-    def update_map(self, maze_input: np.array, leaves_input: np.array):
+    def update_map(self, maze_input: np.array, leaves_input: np.array) -> None:
         """
         Update the locally known maps.
 
@@ -33,7 +33,7 @@ class Runner:
         self.known_maze[y - 1:y + 2, x - 1:x + 2] = maze_input
         self.known_leaves[y - 1:y + 2, x - 1:x + 2] = leaves_input
 
-    def check_status_speed(self):
+    def check_status_speed(self) -> bool:
         """Update the status of the agent."""
         if self.action_wait_time == 0:
             self.action_wait_time = self.action_speed
@@ -42,7 +42,7 @@ class Runner:
             self.action_wait_time -= 1
             return False
 
-    def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array):
+    def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array) -> None:
         """Reset the status of the agent."""
         self.location = start_location
         self.alive = True
