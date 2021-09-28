@@ -19,4 +19,5 @@ policies = [
 ]
 env = MazeRunnerEnv(runners=runners, day_length=300, maze_size=10)
 
-run_batch([env], policies, batch_size=10)
+if __name__ == "__main__":
+    run_batch([env], policies, batch_size=10)
