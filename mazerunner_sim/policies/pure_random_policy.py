@@ -1,11 +1,11 @@
 """Example agent that takes random actions."""
-from mazerunner_sim.agents import Agent
+from mazerunner_sim.policies import BasePolicy
 from mazerunner_sim.observation_and_action import Observation, Action
 
 import numpy as np
 
 
-class PureRandomAgent(Agent):
+class PureRandomPolicy(BasePolicy):
     """Create pure random agent."""
 
     def decide_action(self, observation: Observation) -> Action:
