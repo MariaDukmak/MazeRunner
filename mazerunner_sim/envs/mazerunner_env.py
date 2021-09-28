@@ -143,11 +143,16 @@ class MazeRunnerEnv(gym.Env):
                 known_leaves=runner.known_leaves.copy(),
                 safe_zone=self.safe_zone,
                 runner_location=(runner.location[0], runner.location[1]),
-                time_till_end_of_day=self.day_length - (self.time % self.day_length) - 1,
+                time_till_end_of_day=self.time_till_end_of_day(),
+                action_speed=runner.action_speed,
             )
             for runner_id, runner in enumerate(self.runners)
             if runner.check_status_speed()
         }
+
+    def time_till_end_of_day(self) -> int:
+        """Number of time-steps left till the end of the day"""
+        return self.day_length - (self.time % self.day_length) - 1
 
     def render(self, mode="human", follow_runner_id: int = None) -> Image:
         """
@@ -156,7 +161,10 @@ class MazeRunnerEnv(gym.Env):
         :param follow_runner_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
-        print(self.time)
+        if self.done:
+            print("Done")
+        else:
+            print(f"Time: {self.time}, time left till end of day: {self.time_till_end_of_day()}")
         return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
 
     def get_info(self) -> dict:

@@ -16,7 +16,7 @@ class Runner:
         """
         Initialize a Runner.
 
-        :param action_speed: Runner speed in the simulation.
+        :param action_speed: Number of simulation steps between each action, this effectively forms the runners speed.
         """
         self.action_speed = action_speed  # Base speed
         self.action_wait_time = self.action_speed  # Current speed in a step
