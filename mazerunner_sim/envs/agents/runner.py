@@ -11,6 +11,7 @@ class Runner:
     explored: np.array
     known_maze: np.array
     known_leaves: np.array
+    memory_decay_map: np.array
 
     def __init__(self, action_speed: int = 10, memory_decay_percentage: int = 0):
         """
@@ -52,7 +53,15 @@ class Runner:
 
         return: numpy array of decayed map
         """
-        pass
+        amount_cells_decayed = self.known_maze.size * (self.memory_decay_percentage / 100)
+        zeros = np.zeros(self.known_maze.size - amount_cells_decayed, dtype=bool)
+        ones = np.ones(amount_cells_decayed, dtype=bool)
+
+        filter_array = np.concatenate((ones, zeros), axis=0, out=None)
+
+        np.random.shuffle(filter_array)
+        return filter_array
+
 
 
     def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array) -> None:
