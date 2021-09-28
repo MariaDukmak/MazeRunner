@@ -12,7 +12,7 @@ class Runner:
     known_maze: np.array
     known_leaves: np.array
 
-    def __init__(self, action_speed: int = 10):
+    def __init__(self, action_speed: int = 10, memory_decay_percentage: int = 0):
         """
         Initialize a Runner.
 
@@ -20,6 +20,7 @@ class Runner:
         """
         self.action_speed = action_speed  # Base speed
         self.action_wait_time = self.action_speed  # Current speed in a step
+        self.memory_decay_percentage = memory_decay_percentage
 
     def update_map(self, maze_input: np.array, leaves_input: np.array) -> None:
         """
@@ -30,6 +31,9 @@ class Runner:
         """
         x, y = self.location
         self.explored[y - 1:y + 2, x - 1:x + 2] = True
+
+
+
         self.known_maze[y - 1:y + 2, x - 1:x + 2] = maze_input
         self.known_leaves[y - 1:y + 2, x - 1:x + 2] = leaves_input
 
@@ -41,6 +45,15 @@ class Runner:
         else:
             self.action_wait_time -= 1
             return False
+
+    def memory_decay_map_generator(self) -> np.array:
+        """
+        Generates a memory decay map.
+
+        return: numpy array of decayed map
+        """
+        pass
+
 
     def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array) -> None:
         """Reset the status of the agent."""
