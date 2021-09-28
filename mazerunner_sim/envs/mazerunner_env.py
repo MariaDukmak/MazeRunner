@@ -1,6 +1,6 @@
 """OpenAI gym environment for the MazeRunner."""
 
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from PIL import Image
 
@@ -10,7 +10,7 @@ from mazerunner_sim.envs.maze_generator import generate_maze
 
 from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, render_background
 
-from mazerunner_sim.envs.runner import Runner
+from mazerunner_sim.envs.agents.runner import Runner
 
 from mazerunner_sim.utils.observation_and_action import Observation, Action
 
@@ -32,7 +32,7 @@ class MazeRunnerEnv(gym.Env):
 
     DEATH_PUNISHMENT = 99999
 
-    def __init__(self, maze_size: int = 16, center_size: int = 4, n_runners: int = 1, day_length: int = 20):
+    def __init__(self, runners: List[Runner], maze_size: int = 16, center_size: int = 4, day_length: int = 20):
         """
         Initialize the MazeRunner environment.
 
@@ -44,12 +44,12 @@ class MazeRunnerEnv(gym.Env):
         super(MazeRunnerEnv, self).__init__()
         self.maze, self.safe_zone, self.leaves = generate_maze(maze_size, center_size)
         self.day_length = day_length
-        self.n_runners = n_runners
+        self.runners = runners
         self.reset()
 
         self.rendered_background = render_background(self.maze, self.leaves, self.safe_zone)
 
-    def step(self, actions: List[Action]) -> Tuple[List[Observation], float, bool, dict]:
+    def step(self, actions: Dict[int, Action]) -> Tuple[Dict[int, Observation], float, bool, dict]:
         """
         Taken an step in the environment.
 
@@ -60,7 +60,8 @@ class MazeRunnerEnv(gym.Env):
         self.time += 1
 
         # Let the runners take a step
-        for runner, action in zip(self.runners, actions):
+        for runner_id, action in actions.items():
+            runner = self.runners[runner_id]
             if runner.alive:
                 step = np.array([[0, -1],
                                  [0, 1],
@@ -126,16 +127,17 @@ class MazeRunnerEnv(gym.Env):
         self.total_rewards_given = 0.
 
         center_coord = np.array([self.maze.shape[0] // 2] * 2)
-        self.runners = [Runner(center_coord.copy(), self.safe_zone, self.leaves) for _ in range(self.n_runners)]
+        for runner in self.runners:
+            runner.reset(center_coord.copy(), self.safe_zone, self.leaves)
 
-    def get_observations(self) -> List[Observation]:
+    def get_observations(self) -> Dict[int, Observation]:
         """
         Get information about the environment location, returns walls.
 
         :return A list of runner-observations, take a look at it's documentation for more detail
         """
-        return [
-            Observation(
+        return {
+            runner_id: Observation(
                 explored=runner.explored.copy(),
                 known_maze=runner.known_maze.copy(),
                 known_leaves=runner.known_leaves.copy(),
@@ -143,8 +145,9 @@ class MazeRunnerEnv(gym.Env):
                 runner_location=(runner.location[0], runner.location[1]),
                 time_till_end_of_day=self.day_length - (self.time % self.day_length) - 1,
             )
-            for runner in self.runners
-        ]
+            for runner_id, runner in enumerate(self.runners)
+            if runner.check_status_speed()
+        }
 
     def render(self, mode="human", follow_runner_id: int = None) -> Image:
         """
@@ -153,6 +156,7 @@ class MazeRunnerEnv(gym.Env):
         :param follow_runner_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
+        print(self.time)
         return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
 
     def get_info(self) -> dict:
