@@ -1,7 +1,7 @@
 """Class file for making policies."""
 import abc
 
-from mazerunner_sim.observation_and_action import Observation, Action
+from mazerunner_sim.utils.observation_and_action import Observation, Action
 
 
 class BasePolicy(metaclass=abc.ABCMeta):
@@ -15,3 +15,7 @@ class BasePolicy(metaclass=abc.ABCMeta):
     def decide_action(self, observation: Observation) -> Action:
         """Take an action based on the given observation."""
         raise NotImplementedError
+
+    def reset(self):
+        """Reset the policy."""
+        pass

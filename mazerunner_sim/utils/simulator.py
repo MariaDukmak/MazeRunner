@@ -13,7 +13,7 @@ def run_simulation(env: MazeRunnerEnv,
                    policies: List[BasePolicy],
                    window_name: Union[str, None] = 'MazeRunner Simulation',
                    wait_key: int = 10,
-                   follow_runner_id: int = None) -> float:
+                   follow_runner_id: int = None) -> List[dict]:
     """
     Run the simulation with given parameters.
 
@@ -22,11 +22,12 @@ def run_simulation(env: MazeRunnerEnv,
     :param window_name: Name used for the simulation, don't visualize when window_name is None
     :param wait_key: Time in milliseconds used as interval for displaying steps
     :param follow_runner_id: Id used to follow runner
-    :return: Total reward gotten
+    :return: The collected stats/info from each step
     """
     done = False
     total_reward = 0
     visualize = window_name is not None
+    collected_info = []
 
     observations = env.get_observations()
 
@@ -36,6 +37,8 @@ def run_simulation(env: MazeRunnerEnv,
 
         # Let the actions take place in the environment
         observations, reward, done, info = env.step(actions)
+        collected_info.append(info)
+
         total_reward += reward
 
         if visualize:
@@ -55,4 +58,4 @@ def run_simulation(env: MazeRunnerEnv,
     if visualize:
         cv2.destroyAllWindows()
 
-    return total_reward
+    return collected_info
