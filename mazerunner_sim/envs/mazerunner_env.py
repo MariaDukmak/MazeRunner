@@ -12,7 +12,7 @@ from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, 
 
 from mazerunner_sim.envs.agents.runner import Runner
 
-from mazerunner_sim.observation_and_action import Observation, Action
+from mazerunner_sim.utils.observation_and_action import Observation, Action
 
 import numpy as np
 
@@ -36,9 +36,9 @@ class MazeRunnerEnv(gym.Env):
         """
         Initialize the MazeRunner environment.
 
+        :param runners: The runners in the maze with their properties
         :param maze_size: Size of the maze
         :param center_size: Size of the glade (center)
-        :param n_runners: Number of runners
         :param day_length: Length of a day, at the end of the day, all the runners not in a safe spot are going to a better place
         """
         super(MazeRunnerEnv, self).__init__()
@@ -113,7 +113,7 @@ class MazeRunnerEnv(gym.Env):
         # Observations
         observations = self.get_observations()
 
-        return observations, reward, self.done, {}
+        return observations, reward, self.done, self.get_info()
 
     def reset(self):
         """
@@ -158,3 +158,11 @@ class MazeRunnerEnv(gym.Env):
         """
         print(self.time)
         return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
+
+    def get_info(self) -> dict:
+        """Get the environment and the agents info. Needed for the batch run."""
+        return {
+            'time': self.time,
+            'agents_n': len(self.runners),
+            'explored': [r.explored for r in self.runners],
+        }

@@ -5,7 +5,7 @@ from typing import List
 import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
-from mazerunner_sim.observation_and_action import Observation, Action
+from mazerunner_sim.utils.observation_and_action import Observation, Action
 from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets
 
 
@@ -94,3 +94,7 @@ class PathFindingPolicy(BasePolicy):
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)
+
+    def reset(self):
+        """Reset the planned path of the policy."""
+        self.planned_path = []
