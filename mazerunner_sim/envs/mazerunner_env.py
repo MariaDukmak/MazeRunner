@@ -36,9 +36,9 @@ class MazeRunnerEnv(gym.Env):
         """
         Initialize the MazeRunner environment.
 
+        :param runners: The runners in the maze with their properties
         :param maze_size: Size of the maze
         :param center_size: Size of the glade (center)
-        :param n_runners: Number of runners
         :param day_length: Length of a day, at the end of the day, all the runners not in a safe spot are going to a better place
         """
         super(MazeRunnerEnv, self).__init__()

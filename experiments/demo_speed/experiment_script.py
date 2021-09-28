@@ -1,4 +1,4 @@
-"""Expirement for testing different action speeds."""
+"""Experiment for testing different action speeds."""
 
 from mazerunner_sim import run_simulation
 from mazerunner_sim.policies import PathFindingPolicy
