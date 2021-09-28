@@ -14,4 +14,4 @@ policies = [
 ]
 env = MazeRunnerEnv(n_runners=2, day_length=300, maze_size=10)
 
-run_batch(policies, batch_size=10, env=env)
+run_batch([env], policies, batch_size=10)
