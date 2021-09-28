@@ -59,13 +59,6 @@ class MazeRunnerEnv(gym.Env):
         # Increment time
         self.time += 1
 
-        # # Dict of runner that takes an action
-        # runner_action_dict = {}
-        # runner_action_tuple = zip(self.runners, actions)
-        # for runner in runner_action_tuple:
-        #     if not runner[0].check_status_speed():
-        #         runner_action_dict[runner_action_tuple[0]] = runner_action_tuple[1]
-
         # Let the runners take a step
         for runner_id, action in actions.items():
             runner = self.runners[runner_id]

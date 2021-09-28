@@ -65,9 +65,6 @@ class PathFindingPolicy(BasePolicy):
         """Take an action, using path finding."""
         map_height, map_width = observation.known_maze.shape
 
-        # if observation.status_speed != 0:
-        #     return Action.STAY
-
         # When there is no path planned, plan a new plan
         if len(self.planned_path) == 0:
             explorable_tiles = find_edge_of_knowledge_tiles(observation.known_maze, observation.explored)
