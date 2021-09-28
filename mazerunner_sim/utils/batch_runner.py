@@ -37,27 +37,3 @@ def pickle_and_save(data: Any, filepath: str) -> None:
     :param filepath: The path to save the pickled file to
     """
     pickle.dump(data, open(filepath, 'wb'))
-
-
-#
-# ### een schets :))
-#
-# def make_simulation_args():
-#     """
-#     Prepare all combinations of parameter values for `batch_run`
-#
-#     Returns:Tuple with the form: (total_iterations, all_kwargs, all_param_values)
-#     """
-#
-#     total_iterations = ...
-#     instellingen_list = ...
-#     all_kwargs = []
-#     fixed_parameters = None
-#
-#     count = len(instellingen_list)
-#     if count:
-#         for instelling in instellingen_list:
-#             kwarg = instelling.copy()
-#             kwarg.update(fixed_parameters)
-#
-#
