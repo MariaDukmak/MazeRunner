@@ -31,6 +31,10 @@ def run_simulation(env: MazeRunnerEnv,
 
     observations = env.get_observations()
 
+    if visualize:
+        cv2.namedWindow(window_name, cv2.WINDOW_GUI_EXPANDED)
+        cv2.resizeWindow(window_name, 800, 800)
+
     while not done:
         # For every agent, decide an action according to the observation
         actions = {runner_id: policies[runner_id].decide_action(observation) for runner_id, observation in observations.items()}

@@ -6,7 +6,6 @@ from math import ceil
 import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
-
 from mazerunner_sim.utils.observation_and_action import Observation, Action
 from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets, compute_explore_paths
 
@@ -59,9 +58,16 @@ def clip_retreat_path(safe_zone: np.array, path: List[Coord]) -> List[Coord]:
 class PathFindingPolicy(BasePolicy):
     """Policy that uses path finding to retreat at the right time and plans new tiles to explore."""
 
-    def __init__(self):
-        """Initialize the policy."""
+    def __init__(self, outside_weight: float = 1., path_length_weight: float = 1.):
+        """
+        Initialize the policy.
+
+        :param outside_weight: How much the distance to the outside of the maze should weigh in the evaluation of a path
+        :param path_length_weight: How much the length of the disputed path should weigh in the evaluation of the path
+        """
         self.planned_path = []
+        self.outside_weight = outside_weight
+        self.path_length_weight = path_length_weight
 
     def decide_action(self, observation: Observation) -> Action:
         """Take an action, using path finding."""
@@ -84,7 +90,6 @@ class PathFindingPolicy(BasePolicy):
                                       for tp, tcp in zip(explore_paths, retreat_paths)]
             if sum(target_validation_mask) > 0:
                 # filter those paths
-                explorable_tiles = [x for x, valid in zip(explorable_tiles, target_validation_mask) if valid]
                 explore_paths = [x for x, valid in zip(explore_paths, target_validation_mask) if valid]
 
                 q_values_paths = [self.q_value_path(target_path, observation) for target_path in explore_paths]
@@ -100,8 +105,7 @@ class PathFindingPolicy(BasePolicy):
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)
 
-    @staticmethod
-    def q_value_path(target_path: List[Coord], observation: Observation) -> float:
+    def q_value_path(self, target_path: List[Coord], observation: Observation) -> float:
         """
         Calculate the estimated quality of that action/taking that path.
 
@@ -118,7 +122,7 @@ class PathFindingPolicy(BasePolicy):
         map_width, map_height = observation.known_maze.shape
 
         distance_to_outside = min(target_x, map_width - target_x, target_y, map_height - target_y)
-        return -(distance_to_outside + len(target_path))
+        return -(distance_to_outside * self.outside_weight + len(target_path) * self.path_length_weight)
 
     def reset(self):
         """Reset the planned path of the policy."""

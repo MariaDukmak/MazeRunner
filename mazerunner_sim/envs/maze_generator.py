@@ -77,6 +77,11 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.ar
     for x_b, y_b in [(-1, 0), (0, 1), (1, 0), (0, -1)]:
         pixels[size + center_size * x_b, size + center_size * y_b] = True
         pixels[size + (center_size + 1) * x_b, size + (center_size + 1) * y_b] = True
+    # Creating random openings in the walls
+    corrupt_mask = np.zeros(pixels.shape)
+    corrupt_mask[1:-1, 1:-1] = np.random.rand(*(pixels.shape - np.array([2, 2])))
+    corrupt_mask = corrupt_mask > 0.97
+    pixels = np.logical_or(pixels, corrupt_mask)
 
     # Leaves
     leaves = np.zeros((2 * size + 1, 2 * size + 1), dtype=float)
@@ -84,7 +89,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.ar
         for x in range(leaves.shape[1]):
             if pixels[y, x]:
                 leaves[y, x] = manhattan_distance((x, y), (exit_x, exit_y))
-    leaves = np.random.rand(*leaves.shape) > leaves**.8 / (np.max(leaves**.8) / 1.05)
+    leaves = np.random.rand(*leaves.shape) > leaves / (sum(leaves.shape) - 4)
 
     return pixels, safe_zone, leaves
 
@@ -98,5 +103,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     maze = generate_maze(args.size)
-    pixels = Image.fromarray(maze * 255).convert('RGB')
-    pixels.save(args.output)
+    image = Image.fromarray(maze * 255).convert('RGB')
+    image.save(args.output)
