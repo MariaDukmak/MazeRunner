@@ -10,9 +10,9 @@ from mazerunner_sim.envs import MazeRunnerEnv
 from mazerunner_sim.envs import Runner
 
 runners = [
-    Runner(action_speed=0),
-    Runner(action_speed=0),
-    Runner(action_speed=0)
+    Runner(action_speed=0, memory_decay_percentage=6),
+    Runner(action_speed=5, memory_decay_percentage=5),
+    Runner(action_speed=3, memory_decay_percentage=3)
 ]
 policies = [
     PathFindingPolicy(),
