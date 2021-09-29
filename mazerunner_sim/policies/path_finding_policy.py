@@ -58,9 +58,16 @@ def clip_retreat_path(safe_zone: np.array, path: List[Coord]) -> List[Coord]:
 class PathFindingPolicy(BasePolicy):
     """Policy that uses path finding to retreat at the right time and plans new tiles to explore."""
 
-    def __init__(self):
-        """Initialize the policy."""
+    def __init__(self, outside_weight: float = 1., path_length_weight: float = 1.):
+        """
+        Initialize the policy.
+
+        :param outside_weight: How much the distance to the outside of the maze should weigh in the evaluation of a path
+        :param path_length_weight: How much the length of the disputed path should weigh in the evaluation of the path
+        """
         self.planned_path = []
+        self.outside_weight = outside_weight
+        self.path_length_weight = path_length_weight
 
     def decide_action(self, observation: Observation) -> Action:
         """Take an action, using path finding."""
@@ -95,12 +102,14 @@ class PathFindingPolicy(BasePolicy):
                 wait_place = center_path[-1] if len(center_path) > 0 else observation.runner_location
                 self.planned_path.extend([wait_place] * ceil(observation.time_till_end_of_day /
                                                              (observation.action_speed + 1) - len(center_path)))
+            # Debug
+            for i in range(1, len(self.planned_path)):
+                assert np.abs(np.array(self.planned_path[i-1]) - self.planned_path[i]).sum() <= 1
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)
 
-    @staticmethod
-    def q_value_path(target_path: List[Coord], observation: Observation) -> float:
+    def q_value_path(self, target_path: List[Coord], observation: Observation) -> float:
         """
         Calculate the estimated quality of that action/taking that path.
 
@@ -117,7 +126,7 @@ class PathFindingPolicy(BasePolicy):
         map_width, map_height = observation.known_maze.shape
 
         distance_to_outside = min(target_x, map_width - target_x, target_y, map_height - target_y)
-        return -(distance_to_outside + len(target_path))
+        return -(distance_to_outside * self.outside_weight + len(target_path) * self.path_length_weight)
 
     def reset(self):
         """Reset the planned path of the policy."""

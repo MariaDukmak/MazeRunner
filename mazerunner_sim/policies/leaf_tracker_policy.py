@@ -1,6 +1,6 @@
 """Policy that uses Bayes Theorem on the leaves."""
 
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -12,9 +12,15 @@ from mazerunner_sim.utils.pathfinder import Coord, manhattan_distance
 class LeafTrackerPolicy(PathFindingPolicy):
     """Policy that extends the pathfinding-policy to also consider the leaves in it's q-value function."""
 
-    def __init__(self):
-        """Initialize the policy."""
-        super().__init__()
+    def __init__(self, path_length_weight: float = 1., leaf_weight: float = 100.):
+        """
+        Initialize the policy.
+
+        :param path_length_weight: How much the distance to the outside of the maze should weigh in the evaluation of a path
+        :param leaf_weight: How much the expected exist according to the leaves should weigh in the evaluation of a path
+        """
+        super().__init__(path_length_weight=path_length_weight)
+        self.leaf_weight = leaf_weight
 
     def decide_action(self, observation: Observation) -> Action:
         known_leaves, known_not_leaves = [], []
@@ -28,8 +34,11 @@ class LeafTrackerPolicy(PathFindingPolicy):
         # Calculate the probability for each possible exit
         height, width = observation.known_maze.shape
         self.probs_exits = {
-            proposed_exit: self.calc_probability_exit(proposed_exit, known_leaves, known_not_leaves)
-            for proposed_exit in [(0, 0), (0, height-1), (width-1, 0), (width-1, height-1)]
+            proposed_exit: self.calc_probability_exit(proposed_exit, known_leaves, known_not_leaves, observation.known_maze.shape)
+            for proposed_exit in [
+                (0, 0), (0, height-1), (width-1, 0), (width-1, height-1),
+                (0, height//2), (width//2, 0), (width-1, height//2), (height//2, height-1)
+            ]
         }
 
         return super().decide_action(observation)
@@ -48,23 +57,23 @@ class LeafTrackerPolicy(PathFindingPolicy):
         :return: a float representing the q-value/quality of following the given path, higher = better
         """
         target_x, target_y = target_path[-1]
-        map_width, map_height = observation.known_maze.shape
         q_value = 0
 
-        # # Distance from current position
-        # q_value -= len(target_path)
-        #
+        # Distance from current position
+        q_value -= len(target_path) * self.path_length_weight
+
         # # Distance to outside
+        # map_width, map_height = observation.known_maze.shape
         # q_value -= min(target_x, map_width - target_x, target_y, map_height - target_y)
 
         # Expected exit according to the leaves
         for anchor, prob in self.probs_exits.items():
-            q_value += prob / manhattan_distance((target_x, target_y), anchor)
+            q_value += prob / (manhattan_distance((target_x, target_y), anchor)+0.01) * self.leaf_weight
 
         return q_value
 
     @staticmethod
-    def calc_probability_exit(proposed_exit: Coord, known_leaves: List[Coord], known_not_leaves: List[Coord]) -> float:
+    def calc_probability_exit(proposed_exit: Coord, known_leaves: List[Coord], known_not_leaves: List[Coord], maze_shape: Tuple[int]) -> float:
         """
         Calculate the probability of the proposed_exit being the actual exit given the known leaves.
 
@@ -75,6 +84,7 @@ class LeafTrackerPolicy(PathFindingPolicy):
                  the probability isn't on the 0.0 - 1.0 scale, but relative to other exits.
                  Because this is less calculation and all that's needed to compare probable exits.
         """
-        return float(np.prod([1 - manhattan_distance(coord, proposed_exit) for coord in known_leaves] +
-                             [manhattan_distance(coord, proposed_exit) for coord in known_not_leaves]
-                             )) / 0.5**(len(known_leaves) + len(known_not_leaves))
+        largest_dist = sum(maze_shape) - 4
+        return float(np.prod([1 - manhattan_distance(coord, proposed_exit) / largest_dist for coord in known_leaves] +
+                             [manhattan_distance(coord, proposed_exit) / largest_dist for coord in known_not_leaves]
+                             )) * 2**(len(known_not_leaves) + len(known_leaves))
