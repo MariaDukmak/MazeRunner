@@ -38,4 +38,4 @@ def pickle_and_save(data: Any, filepath: str) -> None:
     :param data: Any type of Python data-container
     :param filepath: The path to save the pickled file to
     """
-    pickle.dump(data[0], open(filepath, 'wb'))
+    pickle.dump(data, open(filepath, 'wb'))
