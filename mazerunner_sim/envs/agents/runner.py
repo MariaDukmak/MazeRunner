@@ -32,9 +32,6 @@ class Runner:
         """
         x, y = self.location
         self.explored[y - 1:y + 2, x - 1:x + 2] = True
-
-
-
         self.known_maze[y - 1:y + 2, x - 1:x + 2] = maze_input
         self.known_leaves[y - 1:y + 2, x - 1:x + 2] = leaves_input
 
@@ -49,7 +46,7 @@ class Runner:
 
     def memory_decay_map_generator(self) -> np.array:
         """
-        Generates a memory decay map.
+        Get generated memory decay map.
 
         return: numpy array of decayed map
         """
@@ -67,8 +64,6 @@ class Runner:
         filter_array = np.logical_or(filter_array, self.safe_zone_spawn)
 
         return filter_array
-
-
 
     def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array) -> None:
         """Reset the status of the agent."""

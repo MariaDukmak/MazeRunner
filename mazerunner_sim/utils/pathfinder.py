@@ -73,6 +73,14 @@ def surrounding_tiles(coord: Coord) -> List[Coord]:
 
 
 def compute_explore_paths(start_coord: Coord, runner_known_map: np.array, runner_explored_map: np.array):
+    """
+    Compute paths for exploring
+
+    :param start_coord: Start coords
+    :param runner_known_map: Known map of the runner
+    :param runner_explored_map: Explored map of the runner
+    :return:
+    """
     edge_tiles = []
     visited_tiles = {start_coord: None}  # key: next_tile, value: previous_tile
 
@@ -88,7 +96,7 @@ def compute_explore_paths(start_coord: Coord, runner_known_map: np.array, runner
                 # Check coords with maze if you can walk there
                 if runner_known_map[next_tile[1], next_tile[0]] and next_tile not in visited_tiles:
 
-                    x, y = next_tile[0]+1, next_tile[1]+1
+                    x, y = next_tile[0] + 1, next_tile[1] + 1
                     explored = np.pad(runner_explored_map, (1, 1), 'constant', constant_values=False)
                     #     UP                          LEFT                   RIGHT                       DOWN
                     if not(explored[y - 1, x] and explored[y, x - 1] and explored[y, x + 1] and explored[y + 1, x]):
@@ -161,7 +169,6 @@ def paths_origin_targets(origin: Coord, targets: List[Coord], maze: np.array) ->
                     if next_tile in targets_togo:
                         done = True
                         break
-
 
     # Trace back the path for each of the targets
     return [traceback_visited(visited_tree, target, origin) for target in targets]

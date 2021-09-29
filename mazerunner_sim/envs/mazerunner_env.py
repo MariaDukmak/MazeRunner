@@ -108,9 +108,7 @@ class MazeRunnerEnv(gym.Env):
                 if runner.alive:
                     forget_mask = runner.memory_decay_map_generator()
 
-                    runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy()) # filter geheugen
-                    # runner.known_maze = combined_maze_map.copy()
-                    # runner.known_leaves = combined_leaves_map.copy()
+                    runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy())
                     runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
                     runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
@@ -155,7 +153,7 @@ class MazeRunnerEnv(gym.Env):
         }
 
     def time_till_end_of_day(self) -> int:
-        """Number of time-steps left till the end of the day"""
+        """Get number of time-steps left till the end of the day"""
         return self.day_length - (self.time % self.day_length) - 1
 
     def render(self, mode="human", follow_runner_id: int = None) -> Image:
@@ -165,7 +163,6 @@ class MazeRunnerEnv(gym.Env):
         :param follow_runner_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
-
         if self.done:
             print("Done")
 
