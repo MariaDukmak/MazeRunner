@@ -31,6 +31,9 @@ class Runner:
         :param maze_input: 3x3 block of booleans surrounding the runner where False is a wall and True is an open space
         """
         x, y = self.location
+        # Wait if new information is gathered
+        # self.action_wait_time += np.logical_not(self.explored[y - 1:y + 2, x - 1:x + 2]).sum()
+
         self.explored[y - 1:y + 2, x - 1:x + 2] = True
         self.known_maze[y - 1:y + 2, x - 1:x + 2] = maze_input
         self.known_leaves[y - 1:y + 2, x - 1:x + 2] = leaves_input
