@@ -16,6 +16,6 @@ policies = [
     PureRandomPolicy(),
     PureRandomPolicy(),
 ]
-env = MazeRunnerEnv(runners, day_length=1000)
+env = MazeRunnerEnv(runners, day_length=100)
 
 run_simulation(env, policies, wait_key=25, follow_runner_id=0)

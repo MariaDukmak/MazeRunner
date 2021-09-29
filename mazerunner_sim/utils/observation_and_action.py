@@ -20,6 +20,7 @@ class Observation(NamedTuple):
         safe_zone: map of booleans the size of the entire maze, True means safe to be at the end of the day
         runner_location: Coordinate location of the runner (x, y)
         time_till_end_of_day: Time till the end of the day, decreases from `day_length` to 0
+        action_speed: Number of simulation steps between each action, this effectively forms the runners speed
 
     This can be expanded to have more observation parameters in the future as the simulation development continuous.
     """
@@ -30,6 +31,7 @@ class Observation(NamedTuple):
     safe_zone: np.array
     runner_location: Tuple[int, int]
     time_till_end_of_day: int
+    action_speed: int
 
 
 class Action(int):

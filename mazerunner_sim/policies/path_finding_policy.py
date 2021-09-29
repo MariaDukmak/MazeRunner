@@ -1,12 +1,15 @@
 """Policy that uses pathfinding."""
 
 from typing import List
+from math import ceil
 
 import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
+
 from mazerunner_sim.observation_and_action import Observation, Action
 from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets, compute_explore_paths
+
 
 
 def next_coord_to_action(next_coord: Coord, old_coord: Coord) -> Action:
@@ -63,7 +66,6 @@ class PathFindingPolicy(BasePolicy):
 
     def decide_action(self, observation: Observation) -> Action:
         """Take an action, using path finding."""
-        map_height, map_width = observation.known_maze.shape
 
         # When there is no path planned, plan a new plan
         if len(self.planned_path) == 0:
@@ -74,24 +76,49 @@ class PathFindingPolicy(BasePolicy):
             center = observation.known_maze.shape[1] // 2, observation.known_maze.shape[0] // 2
             *retreat_paths, center_path = paths_origin_targets(center, explorable_tiles + [observation.runner_location], observation.known_maze)
             center_path = center_path[::-1]
+
             *retreat_paths, center_path = [clip_retreat_path(observation.safe_zone, p) for p in retreat_paths + [center_path]]
 
-            target_validation_mask = [len(tp) + len(tcp) <= observation.time_till_end_of_day
+            # Only keep the paths that can be done and retreated within the time left
+            target_validation_mask = [len(tp) + len(tcp) < observation.time_till_end_of_day / (observation.action_speed+1)
                                       for tp, tcp in zip(explore_paths, retreat_paths)]
             if sum(target_validation_mask) > 0:
+                # filter those paths
                 explorable_tiles = [x for x, valid in zip(explorable_tiles, target_validation_mask) if valid]
                 explore_paths = [x for x, valid in zip(explore_paths, target_validation_mask) if valid]
-                tile_scores = [
-                    min(x, map_width - x, y, map_height - y) + len(target_path)
-                    for (x, y), target_path in zip(explorable_tiles, explore_paths)
-                ]
 
-                best_paths = [path for path, score in zip(explore_paths, tile_scores) if score == min(tile_scores)]
+                q_values_paths = [self.q_value_path(target_path, observation) for target_path in explore_paths]
+                best_paths = [path for path, score in zip(explore_paths, q_values_paths) if score == max(q_values_paths)]
+
                 self.planned_path.extend(best_paths[np.random.randint(len(best_paths))])
             else:
                 self.planned_path.extend(center_path)
                 wait_place = center_path[-1] if len(center_path) > 0 else observation.runner_location
-                self.planned_path.extend([wait_place] * (observation.time_till_end_of_day + 1 - len(center_path)))
+                self.planned_path.extend([wait_place] * ceil(observation.time_till_end_of_day / (observation.action_speed+1) - len(center_path)))
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)
+
+    @staticmethod
+    def q_value_path(target_path: List[Coord], observation: Observation) -> float:
+        """
+        Calculate the estimated quality of that action/taking that path.
+
+        The pathfinder policy will take the path of the highest expected quality,
+        so the performance of the policy is highly dependant of the content of this function.
+
+        This policy uses the distance to the outside of the maze at the end and the length of the path.
+
+        :param target_path: path to evaluate the q-value of
+        :param observation: observation to use as extra info to estimate the q-value
+        :return: a float representing the q-value/quality of following the given path, higher = better
+        """
+        target_x, target_y = target_path[-1]
+        map_width, map_height = observation.known_maze.shape
+
+        distance_to_outside = min(target_x, map_width - target_x, target_y, map_height - target_y)
+        return -(distance_to_outside + len(target_path))
+
+    def reset(self):
+        """Reset the planned path of the policy."""
+        self.planned_path = []
