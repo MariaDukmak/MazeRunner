@@ -1,6 +1,7 @@
 """Policy that uses pathfinding."""
 
 from typing import List
+from math import ceil
 
 import numpy as np
 
@@ -92,7 +93,7 @@ class PathFindingPolicy(BasePolicy):
             else:
                 self.planned_path.extend(center_path)
                 wait_place = center_path[-1] if len(center_path) > 0 else observation.runner_location
-                self.planned_path.extend([wait_place] * (observation.time_till_end_of_day + 1 - len(center_path)))
+                self.planned_path.extend([wait_place] * ceil(observation.time_till_end_of_day / (observation.action_speed+1) - len(center_path)))
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)

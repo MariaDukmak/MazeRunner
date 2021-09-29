@@ -94,7 +94,7 @@ class MazeRunnerEnv(gym.Env):
                for r in self.runners):
             self.done = True
         # if all runners are dead
-        elif not all(runner.alive for runner in self.runners):
+        elif not any(runner.alive for runner in self.runners):
             self.done = True
             reward -= self.DEATH_PUNISHMENT + self.total_rewards_given
         self.total_rewards_given += reward
@@ -161,11 +161,11 @@ class MazeRunnerEnv(gym.Env):
         :param follow_runner_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
+
         if self.done:
             print("Done")
-        else:
-            print(f"Time: {self.time}, time left till end of day: {self.time_till_end_of_day()}")
-        return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
+
+        return render_agent_in_step(self, follow_runner_id)
 
     def get_info(self) -> dict:
         """Get the environment and the agents info. Needed for the batch run."""
