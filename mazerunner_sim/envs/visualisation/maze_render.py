@@ -181,10 +181,8 @@ def render_agent_in_step(env, render_agent_id: Union[int, None] = None) -> Image
     """
     Render all agents from step.
 
-    :param maze_information: Information about the maze
-    :param background_image: Rendered background from maze information
-    :param runners: List of all runners
-    :param render_agent_id: Id of follwing agent
+    :param env: The environment
+    :param render_agent_id: Id of the agent to follow the explored map of
     :return: Returns image of current step
     """
     # Copy from background
@@ -220,7 +218,7 @@ def render_agent_in_step(env, render_agent_id: Union[int, None] = None) -> Image
     if render_agent_id is not None:
         copy_background = render_explored_maze(copy_background, env.runners[render_agent_id])
 
-    ImageDraw.Draw(copy_background).text((0, 0), f"Time: {env.time}, time left till end of day: {env.time_till_end_of_day()})")
+    ImageDraw.Draw(copy_background).text((5, 0), f"Time: {env.time}, time left till end of day: {env.time_till_end_of_day()}")
 
     return copy_background
 
