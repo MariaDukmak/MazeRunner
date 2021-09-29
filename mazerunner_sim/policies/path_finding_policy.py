@@ -83,7 +83,6 @@ class PathFindingPolicy(BasePolicy):
                                       for tp, tcp in zip(explore_paths, retreat_paths)]
             if sum(target_validation_mask) > 0:
                 # filter those paths
-                explorable_tiles = [x for x, valid in zip(explorable_tiles, target_validation_mask) if valid]
                 explore_paths = [x for x, valid in zip(explore_paths, target_validation_mask) if valid]
 
                 q_values_paths = [self.q_value_path(target_path, observation) for target_path in explore_paths]
