@@ -12,7 +12,7 @@ class Runner:
     known_maze: np.array
     known_leaves: np.array
 
-    def __init__(self, action_speed: int = 10):
+    def __init__(self, action_speed: int = 10, memory_decay_percentage: int = 0):
         """
         Initialize a Runner.
 
@@ -20,6 +20,8 @@ class Runner:
         """
         self.action_speed = action_speed  # Base speed
         self.action_wait_time = self.action_speed  # Current speed in a step
+        self.memory_decay_percentage = memory_decay_percentage
+        self.safe_zone_spawn = np.array
 
     def update_map(self, maze_input: np.array, leaves_input: np.array) -> None:
         """
@@ -42,6 +44,27 @@ class Runner:
             self.action_wait_time -= 1
             return False
 
+    def memory_decay_map_generator(self) -> np.array:
+        """
+        Get generated memory decay map.
+
+        return: numpy array of decayed map
+        """
+        amount_cells_decayed = int(self.known_maze.size * (self.memory_decay_percentage / 100))
+        ones = np.ones(self.known_maze.size - amount_cells_decayed, dtype=bool)
+        zeros = np.zeros(amount_cells_decayed, dtype=bool)
+
+        # True = keep, False = forget
+        filter_array = np.concatenate((ones, zeros), axis=0, out=None)
+
+        np.random.shuffle(filter_array)
+
+        # Make from filter array, 2d array
+        filter_array = np.reshape(filter_array, (-1, self.known_maze.shape[0]))
+        filter_array = np.logical_or(filter_array, self.safe_zone_spawn)
+
+        return filter_array
+
     def reset(self, start_location: np.array, safe_zone: np.array, leaves: np.array) -> None:
         """Reset the status of the agent."""
         self.location = start_location
@@ -49,3 +72,4 @@ class Runner:
         self.explored = safe_zone.copy()
         self.known_maze = safe_zone.copy()
         self.known_leaves = np.logical_and(leaves, self.explored)
+        self.safe_zone_spawn = safe_zone.copy()

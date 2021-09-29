@@ -7,7 +7,7 @@ import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
 from mazerunner_sim.utils.observation_and_action import Observation, Action
-from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets
+from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets, compute_explore_paths
 
 
 def next_coord_to_action(next_coord: Coord, old_coord: Coord) -> Action:
@@ -67,19 +67,20 @@ class PathFindingPolicy(BasePolicy):
 
         # When there is no path planned, plan a new plan
         if len(self.planned_path) == 0:
-            # Tiles at the edge of knowledge can be explored
-            explorable_tiles = find_edge_of_knowledge_tiles(observation.known_maze, observation.explored)
+
+            explore_paths = compute_explore_paths(observation.runner_location, observation.known_maze, observation.explored)
+            explorable_tiles = [path[-1] for path in explore_paths]
 
             center = observation.known_maze.shape[1] // 2, observation.known_maze.shape[0] // 2
-            # Compute the paths to the explorable tiles and the path back to the center
-            *explore_paths, center_path = paths_origin_targets(observation.runner_location, explorable_tiles + [center],
+            *retreat_paths, center_path = paths_origin_targets(center,
+                                                               explorable_tiles + [observation.runner_location],
                                                                observation.known_maze)
-            # When the runner is at the explore tile, what is the path to retreat to the center
-            retreat_paths = paths_origin_targets(center, explorable_tiles, observation.known_maze)
+            center_path = center_path[::-1]
+
             *retreat_paths, center_path = [clip_retreat_path(observation.safe_zone, p) for p in retreat_paths + [center_path]]
 
             # Only keep the paths that can be done and retreated within the time left
-            target_validation_mask = [len(tp) + len(tcp) < observation.time_till_end_of_day / (observation.action_speed+1)
+            target_validation_mask = [len(tp) + len(tcp) < observation.time_till_end_of_day / (observation.action_speed + 1)
                                       for tp, tcp in zip(explore_paths, retreat_paths)]
             if sum(target_validation_mask) > 0:
                 # filter those paths
@@ -92,7 +93,8 @@ class PathFindingPolicy(BasePolicy):
             else:
                 self.planned_path.extend(center_path)
                 wait_place = center_path[-1] if len(center_path) > 0 else observation.runner_location
-                self.planned_path.extend([wait_place] * ceil(observation.time_till_end_of_day / (observation.action_speed+1) - len(center_path)))
+                self.planned_path.extend([wait_place] * ceil(observation.time_till_end_of_day /
+                                                             (observation.action_speed + 1) - len(center_path)))
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)

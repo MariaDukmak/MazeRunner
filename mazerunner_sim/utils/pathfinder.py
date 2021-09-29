@@ -60,6 +60,55 @@ def coord_within_boundary(maze: np.array, coord: Coord) -> bool:
     return 0 <= x < width and 0 <= y < height
 
 
+def surrounding_tiles(coord: Coord) -> List[Coord]:
+    """
+    Get surrounding tiles from giving tile.
+
+    :param coord: Given coord to check surrounding
+    :return: np array of surrounding_tiles
+    """
+    x, y = coord
+    surrounding = [(x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)]
+    return surrounding
+
+
+def compute_explore_paths(start_coord: Coord, runner_known_map: np.array, runner_explored_map: np.array):
+    """
+    Compute paths for exploring
+
+    :param start_coord: Start coords
+    :param runner_known_map: Known map of the runner
+    :param runner_explored_map: Explored map of the runner
+    :return:
+    """
+    edge_tiles = []
+    visited_tiles = {start_coord: None}  # key: next_tile, value: previous_tile
+
+    q = PriorityQueue()
+    q.put((0, start_coord))
+    while not q.empty():
+        # gets the tile with the lowest priority value
+        priority, tile = q.get()
+
+        for next_tile in surrounding_tiles(tile):
+            if coord_within_boundary(runner_known_map, next_tile):
+
+                # Check coords with maze if you can walk there
+                if runner_known_map[next_tile[1], next_tile[0]] and next_tile not in visited_tiles:
+
+                    x, y = next_tile[0] + 1, next_tile[1] + 1
+                    explored = np.pad(runner_explored_map, (1, 1), 'constant', constant_values=False)
+                    #     UP                          LEFT                   RIGHT                       DOWN
+                    if not(explored[y - 1, x] and explored[y, x - 1] and explored[y, x + 1] and explored[y + 1, x]):
+                        edge_tiles.append(next_tile)
+                    q.put((priority + 1, next_tile))
+
+                    visited_tiles[next_tile] = tile
+
+    paths = [traceback_visited(visited_tiles, edge_tile, start_coord) for edge_tile in edge_tiles]
+    return paths
+
+
 def paths_origin_targets(origin: Coord, targets: List[Coord], maze: np.array) -> List[List[Coord]]:
     """
     Find the paths from the origin to the targets.
