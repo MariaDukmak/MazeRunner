@@ -1,8 +1,10 @@
 """Batch runner function."""
 from typing import Sequence, Any, List
+
 from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
 from mazerunner_sim.utils.simulator import run_simulation
 from mazerunner_sim.policies import BasePolicy
+
 from multiprocessing import Pool, cpu_count
 
 from copy import deepcopy
