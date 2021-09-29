@@ -11,7 +11,7 @@ This git repository houses the challenges for the course *Autonomy By Design*.
 The simulation is made out of two parts, the `Environment` and the `Policy`.
 The image below illustrates the simulation loop:
 
-![](https://github.com/MariaDukmak/MazeRunner/blob/Readme-uitwerken/images/schets_simulatie.png)
+![](https://github.com/MariaDukmak/MazeRunner/blob/Readme-uitwerken/readme_assets/schets_simulatie.png)
 
 
 ### Installation
