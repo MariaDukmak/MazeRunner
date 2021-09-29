@@ -106,9 +106,13 @@ class MazeRunnerEnv(gym.Env):
             combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
             for runner in self.runners:
                 if runner.alive:
-                    runner.explored = combined_explored_map.copy()
-                    runner.known_maze = combined_maze_map.copy()
-                    runner.known_leaves = combined_leaves_map.copy()
+                    forget_mask = runner.memory_decay_map_generator()
+
+                    runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy()) # filter geheugen
+                    # runner.known_maze = combined_maze_map.copy()
+                    # runner.known_leaves = combined_leaves_map.copy()
+                    runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
+                    runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
         # Observations
         observations = self.get_observations()

@@ -6,7 +6,7 @@ import numpy as np
 
 from mazerunner_sim.policies import BasePolicy
 from mazerunner_sim.observation_and_action import Observation, Action
-from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets
+from mazerunner_sim.utils.pathfinder import Coord, paths_origin_targets, compute_explore_paths
 
 
 def next_coord_to_action(next_coord: Coord, old_coord: Coord) -> Action:
@@ -67,12 +67,13 @@ class PathFindingPolicy(BasePolicy):
 
         # When there is no path planned, plan a new plan
         if len(self.planned_path) == 0:
-            explorable_tiles = find_edge_of_knowledge_tiles(observation.known_maze, observation.explored)
+
+            explore_paths = compute_explore_paths(observation.runner_location, observation.known_maze, observation.explored)
+            explorable_tiles = [path[-1] for path in explore_paths]
 
             center = observation.known_maze.shape[1] // 2, observation.known_maze.shape[0] // 2
-            *explore_paths, center_path = paths_origin_targets(observation.runner_location, explorable_tiles + [center],
-                                                               observation.known_maze)
-            retreat_paths = paths_origin_targets(center, explorable_tiles, observation.known_maze)
+            *retreat_paths, center_path = paths_origin_targets(center, explorable_tiles + [observation.runner_location], observation.known_maze)
+            center_path = center_path[::-1]
             *retreat_paths, center_path = [clip_retreat_path(observation.safe_zone, p) for p in retreat_paths + [center_path]]
 
             target_validation_mask = [len(tp) + len(tcp) <= observation.time_till_end_of_day
