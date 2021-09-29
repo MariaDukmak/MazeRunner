@@ -89,7 +89,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.ar
         for x in range(leaves.shape[1]):
             if pixels[y, x]:
                 leaves[y, x] = manhattan_distance((x, y), (exit_x, exit_y))
-    leaves = np.random.rand(*leaves.shape) > leaves / (sum(leaves.shape)-4)
+    leaves = np.random.rand(*leaves.shape) > leaves / (sum(leaves.shape) - 4)
 
     return pixels, safe_zone, leaves
 

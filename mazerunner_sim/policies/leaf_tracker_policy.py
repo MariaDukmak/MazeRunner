@@ -23,6 +23,7 @@ class LeafTrackerPolicy(PathFindingPolicy):
         self.leaf_weight = leaf_weight
 
     def decide_action(self, observation: Observation) -> Action:
+        """Take an action, using the observed leaves."""
         known_leaves, known_not_leaves = [], []
         for y, x in zip(*np.where(observation.known_maze)):
             if observation.known_leaves[y, x]:
@@ -36,8 +37,8 @@ class LeafTrackerPolicy(PathFindingPolicy):
         self.probs_exits = {
             proposed_exit: self.calc_probability_exit(proposed_exit, known_leaves, known_not_leaves, observation.known_maze.shape)
             for proposed_exit in [
-                (0, 0), (0, height-1), (width-1, 0), (width-1, height-1),
-                (0, height//2), (width//2, 0), (width-1, height//2), (height//2, height-1)
+                (0, 0), (0, height - 1), (width - 1, 0), (width - 1, height - 1),
+                (0, height // 2), (width // 2, 0), (width - 1, height // 2), (height // 2, height - 1)
             ]
         }
 
@@ -68,12 +69,13 @@ class LeafTrackerPolicy(PathFindingPolicy):
 
         # Expected exit according to the leaves
         for anchor, prob in self.probs_exits.items():
-            q_value += prob / (manhattan_distance((target_x, target_y), anchor)+0.01) * self.leaf_weight
+            q_value += prob / (manhattan_distance((target_x, target_y), anchor) + 0.01) * self.leaf_weight
 
         return q_value
 
     @staticmethod
-    def calc_probability_exit(proposed_exit: Coord, known_leaves: List[Coord], known_not_leaves: List[Coord], maze_shape: Tuple[int]) -> float:
+    def calc_probability_exit(proposed_exit: Coord, known_leaves: List[Coord],
+                              known_not_leaves: List[Coord], maze_shape: Tuple[int, int]) -> float:
         """
         Calculate the probability of the proposed_exit being the actual exit given the known leaves.
 
@@ -83,6 +85,7 @@ class LeafTrackerPolicy(PathFindingPolicy):
         :return: The probability of the proposed exit being the actual exit,
                  the probability isn't on the 0.0 - 1.0 scale, but relative to other exits.
                  Because this is less calculation and all that's needed to compare probable exits.
+        :param maze_shape: Shape of the maze
         """
         largest_dist = sum(maze_shape) - 4
         return float(np.prod([1 - manhattan_distance(coord, proposed_exit) / largest_dist for coord in known_leaves] +

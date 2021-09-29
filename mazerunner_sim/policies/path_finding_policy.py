@@ -71,7 +71,6 @@ class PathFindingPolicy(BasePolicy):
 
     def decide_action(self, observation: Observation) -> Action:
         """Take an action, using path finding."""
-
         # When there is no path planned, plan a new plan
         if len(self.planned_path) == 0:
 
@@ -102,9 +101,6 @@ class PathFindingPolicy(BasePolicy):
                 wait_place = center_path[-1] if len(center_path) > 0 else observation.runner_location
                 self.planned_path.extend([wait_place] * ceil(observation.time_till_end_of_day /
                                                              (observation.action_speed + 1) - len(center_path)))
-            # Debug
-            for i in range(1, len(self.planned_path)):
-                assert np.abs(np.array(self.planned_path[i-1]) - self.planned_path[i]).sum() <= 1
 
         # Follow the planned path
         return next_coord_to_action(self.planned_path.pop(0), observation.runner_location)
