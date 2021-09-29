@@ -83,20 +83,19 @@ def compute_explore_paths(start_coord: Coord, runner_known_map: np.array, runner
         priority, tile = q.get()
 
         for next_tile in surrounding_tiles(tile):
-            # Check coords with maze if you can walk there
-            if runner_known_map[next_tile[1], next_tile[0]] and next_tile not in visited_tiles:
-                if next_tile == (16, 12):
-                    x = 0
-                    print('debug')
+            if coord_within_boundary(runner_known_map, next_tile):
 
-                x, y = tile[0]+1, tile[1]+1
-                explored = np.pad(runner_explored_map, (1, 1), 'constant', constant_values=False)
-                #     UP                          LEFT                   RIGHT                       DOWN
-                if not(explored[y - 1, x] and explored[y, x - 1] and explored[y, x + 1] and explored[y + 1, x]):
-                    edge_tiles.append(next_tile)
-                q.put((priority + 1, next_tile))
+                # Check coords with maze if you can walk there
+                if runner_known_map[next_tile[1], next_tile[0]] and next_tile not in visited_tiles:
 
-                visited_tiles[next_tile] = tile
+                    x, y = next_tile[0]+1, next_tile[1]+1
+                    explored = np.pad(runner_explored_map, (1, 1), 'constant', constant_values=False)
+                    #     UP                          LEFT                   RIGHT                       DOWN
+                    if not(explored[y - 1, x] and explored[y, x - 1] and explored[y, x + 1] and explored[y + 1, x]):
+                        edge_tiles.append(next_tile)
+                    q.put((priority + 1, next_tile))
+
+                    visited_tiles[next_tile] = tile
 
     paths = [traceback_visited(visited_tiles, edge_tile, start_coord) for edge_tile in edge_tiles]
     return paths

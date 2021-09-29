@@ -6,7 +6,7 @@ from mazerunner_sim.envs import MazeRunnerEnv, Runner
 
 
 runners = [
-    Runner(action_speed=0, memory_decay_percentage=0),
+    Runner(action_speed=0, memory_decay_percentage=1),
     # Runner(action_speed=0, memory_decay_percentage=50),
     # Runner(action_speed=0, memory_decay_percentage=0),
 ]
