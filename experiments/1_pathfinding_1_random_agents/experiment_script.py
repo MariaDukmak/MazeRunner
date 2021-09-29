@@ -5,17 +5,19 @@ a maze-size of 10.
 Run the simulation 10 times.
 """
 from mazerunner_sim import run_batch
-from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy
+from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
 from mazerunner_sim.envs import MazeRunnerEnv
 from mazerunner_sim.envs import Runner
 
 runners = [
     Runner(action_speed=0),
     Runner(action_speed=0),
+    Runner(action_speed=0)
 ]
 policies = [
     PathFindingPolicy(),
     PureRandomPolicy(),
+    LeafTrackerPolicy()
 ]
 env = MazeRunnerEnv(runners=runners, day_length=300, maze_size=10)
 
