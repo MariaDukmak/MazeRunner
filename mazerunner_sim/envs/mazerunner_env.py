@@ -173,5 +173,5 @@ class MazeRunnerEnv(gym.Env):
         return {
             'time': self.time,
             'agents_n': len(self.runners),
-            'explored': [r.explored for r in self.runners],
+            'explored': [r.explored.copy() for r in self.runners],
         }
