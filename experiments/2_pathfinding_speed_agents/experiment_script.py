@@ -1,6 +1,7 @@
 """
 Run a batch experiment with two pathfinding runners that has speed,
-speed of 5 and 0
+memory delay 5%,
+speed of 5 and 0,
 a day-length of 300,
 a maze-size of 10.
 Run the simulation 10 times.
@@ -11,8 +12,8 @@ from mazerunner_sim.envs import MazeRunnerEnv
 from mazerunner_sim.envs import Runner
 
 runners = [
-    Runner(action_speed=5),
-    Runner(action_speed=6),
+    Runner(action_speed=5, memory_decay_percentage=5),
+    Runner(action_speed=6, memory_decay_percentage=5),
 ]
 policies = [
     PathFindingPolicy(),
