@@ -42,6 +42,10 @@
 
 import abc
 from multiprocessing import Pool
+from copy import deepcopy
+import pyarrow.feather as feather
+
+HiddenState = TypeVar('HiddenState')
 
 
 class BatchRunner(metaclass=abc.ABCMeta):
@@ -82,3 +86,4 @@ class BatchRunner(metaclass=abc.ABCMeta):
         with Pool() as pool:
             results = pool.starmap(self._run_single, [])
         # save results
+        feather.write_feather(results, self.filename)

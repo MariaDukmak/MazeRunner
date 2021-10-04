@@ -7,7 +7,8 @@ install_requires = [
     'opencv-python',
     'matplotlib',
     'seaborn',
-    'pandas'
+    'pandas',
+    'pyarrow'
 ]
 
 extras = {
