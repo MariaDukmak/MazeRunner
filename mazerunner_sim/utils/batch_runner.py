@@ -40,6 +40,7 @@
 #     """
 #     pickle.dump(data, open(filepath, 'wb'))
 
+from typing import TypeVar, Union
 import abc
 from multiprocessing import Pool
 from copy import deepcopy
@@ -49,41 +50,43 @@ HiddenState = TypeVar('HiddenState')
 
 
 class BatchRunner(metaclass=abc.ABCMeta):
+
     def __init__(self, filename: str):
         self.filename = filename
 
     @staticmethod
     @abc.abstractmethod
-    def update(env, data) -> data:
+    def update(env, data: Union[HiddenState, None]) -> HiddenState:
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def finish(env, data) -> tuple:
+    def finish(env, data: HiddenState) -> dict:
         pass
 
-    def _run_single(self, env, pol):
-        data = None
+    @classmethod
+    def _run_single(cls, env, policies):
+        hidden_state = None
         done = False
         observations = env.get_observations()
 
         while not done:
             # For every agent, decide an action according to the observation
-            actions = {runner_id: pol[runner_id].decide_action(observation) for runner_id, observation in observations.items()}
+            actions = {runner_id: policies[runner_id].decide_action(observation) for runner_id, observation in observations.items()}
 
             # Let the actions take place in the environment
             observations, reward, done, info = env.step(actions)
 
             # Update data
-            data = self.update(env, data)
+            hidden_state = cls.update(env, hidden_state)
 
-        summary = self.finish(env, data)
+        summary = cls.finish(env, hidden_state)
         return summary
 
-    def run_batch(self, envs, policies, batch_size: int):
-        simulator_params = [(deepcopy(envs[i % len(envs)]), policies, None) for i in range(batch_size)]
+    def run_batch(self, envs, policies, batch_size: int) -> None:
+        simulator_params = [(deepcopy(envs[i % len(envs)]), policies) for i in range(batch_size)]
 
         with Pool() as pool:
-            results = pool.starmap(self._run_single, [])
+            results = pool.starmap(self._run_single, simulator_params)
         # save results
         feather.write_feather(results, self.filename)
