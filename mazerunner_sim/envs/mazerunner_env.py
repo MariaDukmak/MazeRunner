@@ -115,7 +115,7 @@ class MazeRunnerEnv(gym.Env):
         # Observations
         observations = self.get_observations()
 
-        return observations, reward, self.done, self.get_info()
+        return observations, reward, self.done
 
     def reset(self):
         """
@@ -168,10 +168,3 @@ class MazeRunnerEnv(gym.Env):
 
         return render_agent_in_step(self, follow_runner_id)
 
-    def get_info(self) -> dict:
-        """Get the environment and the agents info. Needed for the batch run."""
-        return {
-            'time': self.time,
-            'agents_n': len(self.runners),
-            'explored': [r.explored.copy() for r in self.runners],
-        }
