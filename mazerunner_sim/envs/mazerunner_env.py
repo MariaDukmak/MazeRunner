@@ -94,7 +94,7 @@ class MazeRunnerEnv(gym.Env):
                for r in self.runners):
             self.done = True
         # if all runners are dead
-        elif not all(runner.alive for runner in self.runners):
+        elif not any(runner.alive for runner in self.runners):
             self.done = True
             reward -= self.DEATH_PUNISHMENT + self.total_rewards_given
         self.total_rewards_given += reward
@@ -106,9 +106,11 @@ class MazeRunnerEnv(gym.Env):
             combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
             for runner in self.runners:
                 if runner.alive:
-                    runner.explored = combined_explored_map.copy()
-                    runner.known_maze = combined_maze_map.copy()
-                    runner.known_leaves = combined_leaves_map.copy()
+                    forget_mask = runner.memory_decay_map_generator()
+
+                    runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy())
+                    runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
+                    runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
         # Observations
         observations = self.get_observations()
@@ -143,11 +145,16 @@ class MazeRunnerEnv(gym.Env):
                 known_leaves=runner.known_leaves.copy(),
                 safe_zone=self.safe_zone,
                 runner_location=(runner.location[0], runner.location[1]),
-                time_till_end_of_day=self.day_length - (self.time % self.day_length) - 1,
+                time_till_end_of_day=self.time_till_end_of_day(),
+                action_speed=runner.action_speed,
             )
             for runner_id, runner in enumerate(self.runners)
             if runner.check_status_speed()
         }
+
+    def time_till_end_of_day(self) -> int:
+        """Get number of time-steps left till the end of the day"""
+        return self.day_length - (self.time % self.day_length) - 1
 
     def render(self, mode="human", follow_runner_id: int = None) -> Image:
         """
@@ -156,13 +163,15 @@ class MazeRunnerEnv(gym.Env):
         :param follow_runner_id: The index of the agent to follow what has been explored
         :param mode: Mode of rendering, choose between: ['human']
         """
-        print(self.time)
-        return render_agent_in_step(self.maze, self.rendered_background, self.runners, follow_runner_id)
+        if self.done:
+            print("Done")
+
+        return render_agent_in_step(self, follow_runner_id)
 
     def get_info(self) -> dict:
         """Get the environment and the agents info. Needed for the batch run."""
         return {
             'time': self.time,
             'agents_n': len(self.runners),
-            'explored': [r.explored for r in self.runners],
+            'explored': [r.explored.copy() for r in self.runners],
         }

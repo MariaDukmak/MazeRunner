@@ -5,7 +5,7 @@ from pathlib import Path
 
 from typing import List, Union
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from mazerunner_sim.envs.agents.runner import Runner
 
@@ -177,27 +177,24 @@ def render_background(maze: np.array, leaves: np.array, safe_zone: np.array) -> 
     return background
 
 
-def render_agent_in_step(maze_information: np.array, background_image: Image, runners: List[Runner],
-                         render_agent_id: Union[int, None] = None) -> Image:
+def render_agent_in_step(env, render_agent_id: Union[int, None] = None) -> Image:
     """
     Render all agents from step.
 
-    :param maze_information: Information about the maze
-    :param background_image: Rendered background from maze information
-    :param runners: List of all runners
-    :param render_agent_id: Id of follwing agent
+    :param env: The environment
+    :param render_agent_id: Id of the agent to follow the explored map of
     :return: Returns image of current step
     """
     # Copy from background
-    copy_background = background_image.copy()
+    copy_background = env.rendered_background.copy()
     # Declare with images used for the agent
     agent_icon = Image.open(textures_path / "agent.png")
 
     # Calculate canvas size of the maze
-    tile_width = background_image.width // maze_information.shape[0]
-    tile_height = background_image.height // maze_information.shape[1]
+    tile_width = env.rendered_background.width // env.maze.shape[0]
+    tile_height = env.rendered_background.height // env.maze.shape[1]
 
-    for index, runner in enumerate(runners):
+    for index, runner in enumerate(env.runners):
         agent_icon_copy = agent_icon.copy()
 
         # Split into 3 channels
@@ -219,7 +216,9 @@ def render_agent_in_step(maze_information: np.array, background_image: Image, ru
         )
 
     if render_agent_id is not None:
-        copy_background = render_explored_maze(copy_background, runners[render_agent_id])
+        copy_background = render_explored_maze(copy_background, env.runners[render_agent_id])
+
+    ImageDraw.Draw(copy_background).text((5, 0), f"Time: {env.time}, time left till end of day: {env.time_till_end_of_day()}")
 
     return copy_background
 
