@@ -1,4 +1,4 @@
-"""Batch runner function."""
+"""Batch runner class."""
 # from typing import Sequence, Any, List
 #
 # from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
@@ -89,15 +89,8 @@ class BatchRunner(metaclass=abc.ABCMeta):
 
     def run_batch(self, envs: Sequence[MazeRunnerEnv], policies: Sequence[BasePolicy], batch_size: int) -> None:
         simulator_params = [(deepcopy(envs[i % len(envs)]), policies) for i in range(batch_size)]
-
         with Pool() as pool:
             results = pool.starmap(self._run_single, simulator_params)
         # save results
-        # results: List[dict]
-        # [  # column 1    column 2
-        #     {'time': 10, 'alive': 1}, # batch 1
-        #     {'time': 20, 'alive': 3}, # batch 2
-        #   {'time': 8, 'alive': 2}, # batch 3
-        # ]
-        db = ds.dataset(results)
-        feather.write_feather(db.to_table(), self.filename)
+        table = pa.table({column: [row[column] for row in results] for column in results[0].keys()})
+        feather.write_feather(table, self.filename)

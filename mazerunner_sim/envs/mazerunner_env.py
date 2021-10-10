@@ -68,7 +68,7 @@ class MazeRunnerEnv(gym.Env):
                                  [-1, 0],
                                  [1, 0],
                                  [0, 0]][action])
-                # if the step is actually possible, take the step # TODO add extra code for checking if space is accupied
+                # if the step is actually possible, take the step
                 if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
 

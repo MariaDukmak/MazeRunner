@@ -2,7 +2,7 @@ from typing import Union
 
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
-from mazerunner_sim.policies import PathFindingPolicy
+from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
 import pyarrow.feather as feather
 
 
