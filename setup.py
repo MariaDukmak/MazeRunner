@@ -8,7 +8,8 @@ install_requires = [
     'matplotlib',
     'seaborn',
     'pandas',
-    'pyarrow'
+    'pyarrow',
+    'tqdm',
 ]
 
 extras = {
