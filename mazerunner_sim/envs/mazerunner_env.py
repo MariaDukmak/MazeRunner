@@ -49,7 +49,7 @@ class MazeRunnerEnv(gym.Env):
 
         self.rendered_background = render_background(self.maze, self.leaves, self.safe_zone)
 
-    def step(self, actions: Dict[int, Action]) -> Tuple[Dict[int, Observation], float, bool]:
+    def step(self, actions: Dict[int, Action]) -> Tuple[Dict[int, Observation], float, bool, dict]:
         """
         Taken an step in the environment.
 
@@ -115,7 +115,7 @@ class MazeRunnerEnv(gym.Env):
         # Observations
         observations = self.get_observations()
 
-        return observations, reward, self.done
+        return observations, reward, self.done, {}
 
     def reset(self):
         """

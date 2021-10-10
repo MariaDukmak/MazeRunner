@@ -40,11 +40,15 @@
 #     """
 #     pickle.dump(data, open(filepath, 'wb'))
 
-from typing import TypeVar, Union
+from typing import TypeVar, Union, Sequence
 import abc
 from multiprocessing import Pool
 from copy import deepcopy
 import pyarrow.feather as feather
+import pyarrow.dataset as ds
+
+from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
+from mazerunner_sim.policies.base_policy import BasePolicy
 
 HiddenState = TypeVar('HiddenState')
 
@@ -56,16 +60,16 @@ class BatchRunner(metaclass=abc.ABCMeta):
 
     @staticmethod
     @abc.abstractmethod
-    def update(env, data: Union[HiddenState, None]) -> HiddenState:
+    def update(env: MazeRunnerEnv, data: Union[HiddenState, None]) -> HiddenState:
         pass
 
     @staticmethod
     @abc.abstractmethod
-    def finish(env, data: HiddenState) -> dict:
+    def finish(env: MazeRunnerEnv, data: HiddenState) -> dict:
         pass
 
     @classmethod
-    def _run_single(cls, env, policies):
+    def _run_single(cls, env: MazeRunnerEnv, policies: Sequence[BasePolicy]):
         hidden_state = None
         done = False
         observations = env.get_observations()
@@ -83,10 +87,17 @@ class BatchRunner(metaclass=abc.ABCMeta):
         summary = cls.finish(env, hidden_state)
         return summary
 
-    def run_batch(self, envs, policies, batch_size: int) -> None:
+    def run_batch(self, envs: Sequence[MazeRunnerEnv], policies: Sequence[BasePolicy], batch_size: int) -> None:
         simulator_params = [(deepcopy(envs[i % len(envs)]), policies) for i in range(batch_size)]
 
         with Pool() as pool:
             results = pool.starmap(self._run_single, simulator_params)
         # save results
-        feather.write_feather(results, self.filename)
+        # results: List[dict]
+        # [  # column 1    column 2
+        #     {'time': 10, 'alive': 1}, # batch 1
+        #     {'time': 20, 'alive': 3}, # batch 2
+        #   {'time': 8, 'alive': 2}, # batch 3
+        # ]
+        db = ds.dataset(results)
+        feather.write_feather(db.to_table(), self.filename)
