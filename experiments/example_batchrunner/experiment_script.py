@@ -1,3 +1,4 @@
+"""Example of a batchrunner experiment."""
 from typing import Union
 
 from mazerunner_sim import BatchRunner, HiddenState
