@@ -5,12 +5,12 @@ An agent takes an action, the environment uses that action to update and returns
 Observations and actions are just data containers.
 """
 
-from typing import NamedTuple, Tuple
+from typing import NamedTuple, Tuple, Union, Sequence
 
 import numpy as np
 
 
-class Observation(NamedTuple):
+class MazeObservation(NamedTuple):
     """
     The Maze Runner environment returns observations, policies need this to make decisions.
 
@@ -34,7 +34,13 @@ class Observation(NamedTuple):
     action_speed: int
 
 
-class Action(int):
+AuctionObservation = Sequence[Tuple[int, int]]
+
+
+Observation = Union[MazeObservation, AuctionObservation]
+
+
+class MazeAction(int):
     """An action in the MazeRunner environment is just an integer between 0 and 3."""
 
     UP = 0
@@ -42,3 +48,9 @@ class Action(int):
     LEFT = 2
     RIGHT = 3
     STAY = 4
+
+
+AuctionAction = Sequence[float]
+
+
+Action = Union[MazeAction, AuctionAction]

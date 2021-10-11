@@ -12,7 +12,7 @@ from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, 
 
 from mazerunner_sim.envs.agents.runner import Runner
 
-from mazerunner_sim.utils.observation_and_action import Observation, Action
+from mazerunner_sim.utils.observation_and_action import Observation, Action, MazeAction, AuctionAction
 
 import numpy as np
 
@@ -57,6 +57,19 @@ class MazeRunnerEnv(gym.Env):
         :param actions: list of actions
         :return: observations, reward, done, info.
         """
+
+        if self.time % self.day_length == 0:
+            self._auction_step()
+            reward = 0
+        else:
+            reward = self._maze_step(actions)
+
+        # Observations
+        observations = self.get_observations()
+
+        return observations, reward, self.done, {}
+
+    def _maze_step(self, actions: Dict[int, MazeAction]):
         # Increment time
         self.time += 1
 
@@ -115,10 +128,13 @@ class MazeRunnerEnv(gym.Env):
                     runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
                     runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
-        # Observations
-        observations = self.get_observations()
+        return reward
 
-        return observations, reward, self.done, {}
+    def _auction_step(self, actions: Dict[int, AuctionAction]):
+        # maak tasks (posities uit unexplored gebied)
+        # actions = V
+        #
+        pass
 
     def reset(self):
         """
