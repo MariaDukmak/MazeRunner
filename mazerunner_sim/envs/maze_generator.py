@@ -1,7 +1,6 @@
 """Generator for a maze for the envirement."""
 # Maze generation using recursive backtracker algorithm
 # https://en.wikipedia.org/wiki/Maze_generation_algorithm#Recursive_backtracker
-
 from queue import LifoQueue
 
 from random import choice
