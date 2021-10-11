@@ -1,10 +1,11 @@
 """Example of a batch runner experiment to compare the speed of agents."""
 from typing import Union
 
+import pyarrow.feather as feather
+
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
-import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -52,7 +53,6 @@ policies = [
     LeafTrackerPolicy(),
 ]
 env = MazeRunnerEnv(runners=runners, day_length=300, maze_size=10)
-
 
 if __name__ == '__main__':
     batch_runner = CustomBatchRunner('snelheid_test.feather')

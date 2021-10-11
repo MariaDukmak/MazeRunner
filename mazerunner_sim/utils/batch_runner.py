@@ -3,10 +3,12 @@
 from typing import TypeVar, Union, Sequence, Tuple
 import abc
 from multiprocessing import Pool
+import random
 from copy import deepcopy
 import pyarrow.feather as feather
 import pyarrow as pa
 import tqdm
+import numpy as np
 
 from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
 from mazerunner_sim.policies.base_policy import BasePolicy
@@ -45,12 +47,17 @@ class BatchRunner(metaclass=abc.ABCMeta):
         pass
 
     @classmethod
-    def _run_single(cls, env_and_policies: Tuple[MazeRunnerEnv, Sequence[BasePolicy]]) -> Union[None, dict]:
+    def _run_single(cls, env_policies_seed: Tuple[MazeRunnerEnv, Sequence[BasePolicy], int]) -> Union[None, dict]:
         """
         Run the simulation with the given parameters.
         :param env_and_policies: Tuple of the maze env with the policies of the runners.
         """
-        env, policies = env_and_policies
+        env, policies, seed = env_policies_seed
+
+        # Set seed
+        random.seed(seed)
+        np.random.seed(seed)
+
         hidden_state = None
         done = False
         observations = env.get_observations()
@@ -74,7 +81,7 @@ class BatchRunner(metaclass=abc.ABCMeta):
         The results are not in order because of multiprocessing, faster simulations are more likely to be at the earlier rows.
 
         """
-        simulator_params = [(deepcopy(envs[i % len(envs)]), policies) for i in range(batch_size)]
+        simulator_params = [(deepcopy(envs[i % len(envs)]), policies, i) for i in range(batch_size)]
         with Pool() as pool:
             results = []
             for result in tqdm.tqdm(pool.imap_unordered(self._run_single, simulator_params), total=batch_size):
