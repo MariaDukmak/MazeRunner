@@ -171,4 +171,3 @@ class MazeRunnerEnv(gym.Env):
             print("Done")
 
         return render_agent_in_step(self, follow_runner_id)
-

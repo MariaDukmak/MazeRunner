@@ -15,24 +15,40 @@ HiddenState = TypeVar('HiddenState')
 
 
 class BatchRunner(metaclass=abc.ABCMeta):
+    """Batch runner class."""
 
     def __init__(self, filename: str):
+        """
+        Initialize the batch.
+        :param filename: Name of the data file.
+        """
         self.filename = filename
 
     @staticmethod
     @abc.abstractmethod
     def update(env: MazeRunnerEnv, data: Union[HiddenState, None]) -> HiddenState:
+        """
+        Update function per batch.
+        :param env: Mazeenvironment.
+        :param data: data that have been generated from a simulation
+        """
         pass
 
     @staticmethod
     @abc.abstractmethod
     def finish(env: MazeRunnerEnv, data: HiddenState) -> dict:
+        """
+        Finish data of the batch after simulation.
+        :param env: Mazeenvironment.
+        :param data: data that have been generated from a simulation
+        """
         pass
 
     @classmethod
     def _run_single(cls, env_and_policies: Tuple[MazeRunnerEnv, Sequence[BasePolicy]]) -> Union[None, dict]:
         """
         Run the simulation with the given parameters.
+        :param env_and_policies: Tuple of the maze env with the policies of the runners.
         """
         env, policies = env_and_policies
         hidden_state = None
