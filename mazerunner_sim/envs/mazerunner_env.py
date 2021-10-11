@@ -1,6 +1,6 @@
 """OpenAI gym environment for the MazeRunner."""
 
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Union
 
 from PIL import Image
 
@@ -26,6 +26,7 @@ class MazeRunnerEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     done: bool
+    found_exit: Union[Runner, None]
     time: int
     total_rewards_given: float
     runners: List[Runner]
@@ -68,7 +69,7 @@ class MazeRunnerEnv(gym.Env):
                                  [-1, 0],
                                  [1, 0],
                                  [0, 0]][action])
-                # if the step is actually possible, take the step # TODO add extra code for checking if space is accupied
+                # if the step is actually possible, take the step
                 if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
 
@@ -89,10 +90,12 @@ class MazeRunnerEnv(gym.Env):
         # Reward & done
         reward = -1
         # if a runner found the exit
-        if any(r.location[0] == 0 or r.location[0] == self.maze.shape[1] - 1 or
-               r.location[1] == 0 or r.location[1] == self.maze.shape[0] - 1
-               for r in self.runners):
+        runners_at_exit = [r.location[0] == 0 or r.location[0] == self.maze.shape[1] - 1 or
+                           r.location[1] == 0 or r.location[1] == self.maze.shape[0] - 1
+                           for r in self.runners]
+        if any(runners_at_exit):
             self.done = True
+            self.found_exit = self.runners[runners_at_exit.index(True)]
         # if all runners are dead
         elif not any(runner.alive for runner in self.runners):
             self.done = True
@@ -115,7 +118,7 @@ class MazeRunnerEnv(gym.Env):
         # Observations
         observations = self.get_observations()
 
-        return observations, reward, self.done, self.get_info()
+        return observations, reward, self.done, {}
 
     def reset(self):
         """
@@ -125,6 +128,7 @@ class MazeRunnerEnv(gym.Env):
         but the policies are reset, the time and the `done` flag.
         """
         self.done = False
+        self.found_exit = None
         self.time = 0
         self.total_rewards_given = 0.
 
@@ -167,11 +171,3 @@ class MazeRunnerEnv(gym.Env):
             print("Done")
 
         return render_agent_in_step(self, follow_runner_id)
-
-    def get_info(self) -> dict:
-        """Get the environment and the agents info. Needed for the batch run."""
-        return {
-            'time': self.time,
-            'agents_n': len(self.runners),
-            'explored': [r.explored.copy() for r in self.runners],
-        }

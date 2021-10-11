@@ -133,3 +133,6 @@ dmypy.json
 
 # Pickled files
 *.p
+
+# Feather files
+*.feather

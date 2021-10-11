@@ -1,41 +1,84 @@
-"""Batch runner function."""
-from typing import Sequence, Any, List
+"""Batch runner class."""
+
+from typing import TypeVar, Union, Sequence, Tuple
+import abc
+from multiprocessing import Pool
+from copy import deepcopy
+import pyarrow.feather as feather
+import pyarrow as pa
+import tqdm
 
 from mazerunner_sim.envs.mazerunner_env import MazeRunnerEnv
-from mazerunner_sim.utils.simulator import run_simulation
-from mazerunner_sim.policies import BasePolicy
+from mazerunner_sim.policies.base_policy import BasePolicy
 
-from multiprocessing import Pool, cpu_count
-
-from copy import deepcopy
-import pickle
+HiddenState = TypeVar('HiddenState')
 
 
-def run_batch(envs: Sequence[MazeRunnerEnv], policies: List[BasePolicy], batch_size: int = 1, filepath: str = 'batch_data.p') -> None:
-    """
-    Run a batch of simulation, kind of a Monte Carlo simulation, but also using multiprocessing.
+class BatchRunner(metaclass=abc.ABCMeta):
+    """Batch runner class."""
 
-    :param envs: A sequence of environments used for the simulations,
-                 this can be infinitely many or just one that is repeated for each simulation.
-                 Using multiple different environments can make the simulation results more robust,
-                 because it doesn't use the same maze each time for example.
-    :param policies: A list of policies used for the simulations.
-    :param batch_size: Number of simulations to run, aka the batch size.
-    :param filepath: The file to write the pickled collected batch info to.
-    """
-    simulator_params = [(deepcopy(envs[i % len(envs)]), policies, None) for i in range(batch_size)]
+    def __init__(self, filename: str):
+        """
+        Initialize the batch.
+        :param filename: Name of the data file.
+        """
+        self.filename = filename
 
-    with Pool(cpu_count()) as pool:
-        batch_collected_info = pool.starmap(run_simulation, simulator_params)
+    @staticmethod
+    @abc.abstractmethod
+    def update(env: MazeRunnerEnv, data: Union[HiddenState, None]) -> HiddenState:
+        """
+        Update function per batch.
+        :param env: Mazeenvironment.
+        :param data: data that have been generated from a simulation
+        """
+        pass
 
-    pickle_and_save(batch_collected_info, filepath)
+    @staticmethod
+    @abc.abstractmethod
+    def finish(env: MazeRunnerEnv, data: HiddenState) -> dict:
+        """
+        Finish data of the batch after simulation.
+        :param env: Mazeenvironment.
+        :param data: data that have been generated from a simulation
+        """
+        pass
 
+    @classmethod
+    def _run_single(cls, env_and_policies: Tuple[MazeRunnerEnv, Sequence[BasePolicy]]) -> Union[None, dict]:
+        """
+        Run the simulation with the given parameters.
+        :param env_and_policies: Tuple of the maze env with the policies of the runners.
+        """
+        env, policies = env_and_policies
+        hidden_state = None
+        done = False
+        observations = env.get_observations()
 
-def pickle_and_save(data: Any, filepath: str) -> None:
-    """
-    Save the data into a pickle file.
+        while not done:
+            # For every agent, decide an action according to the observation
+            actions = {runner_id: policies[runner_id].decide_action(observation) for runner_id, observation in observations.items()}
 
-    :param data: Any type of Python data-container
-    :param filepath: The path to save the pickled file to
-    """
-    pickle.dump(data, open(filepath, 'wb'))
+            # Let the actions take place in the environment
+            observations, reward, done, info = env.step(actions)
+
+            # Update data
+            hidden_state = cls.update(env, hidden_state)
+
+        summary = cls.finish(env, hidden_state)
+        return summary
+
+    def run_batch(self, envs: Sequence[MazeRunnerEnv], policies: Sequence[BasePolicy], batch_size: int) -> None:
+        """
+        Run a batch of simulations and write the results to a feather file.
+        The results are not in order because of multiprocessing, faster simulations are more likely to be at the earlier rows.
+
+        """
+        simulator_params = [(deepcopy(envs[i % len(envs)]), policies) for i in range(batch_size)]
+        with Pool() as pool:
+            results = []
+            for result in tqdm.tqdm(pool.imap_unordered(self._run_single, simulator_params), total=batch_size):
+                results.append(result)
+        # save results
+        table = pa.table({column: [row[column] for row in results] for column in results[0].keys()})
+        feather.write_feather(table, self.filename)
