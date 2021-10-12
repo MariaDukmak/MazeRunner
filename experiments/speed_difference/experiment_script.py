@@ -42,24 +42,19 @@ class CustomBatchRunner(BatchRunner):
 runners = [
     Runner(action_speed=6, memory_decay_percentage=5),
 ]
-policies = [
-    LeafTrackerPolicy(),
-    PathFindingPolicy(),
-    PureRandomPolicy(),
-]
 
 env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=10) for _ in range(100)]
 
 
 if __name__ == '__main__':
-    for speed in range(0, 11, 2):
+    for speed in range(0, 15, 2):
         runners[0].action_speed = speed
-        batch_runner_lt = CustomBatchRunner(f'baseline_leaftracker_{str(speed)}.feather')
-        batch_runner_lt.run_batch(envs=env_list, policies=[policies[0]], batch_size=10)
+        batch_runner_lt = CustomBatchRunner(f'speed_diff_leaftracker_{str(speed)}.feather')
+        batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy()], batch_size=10)
 
-        batch_runner_pf = CustomBatchRunner(f'baseline_pathfinder_{str(speed)}.feather')
-        batch_runner_pf.run_batch(envs=env_list, policies=[policies[1]], batch_size=10)
+        batch_runner_pf = CustomBatchRunner(f'speed_diff_pathfinder_{str(speed)}.feather')
+        batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy()], batch_size=10)
 
-        batch_runner_pr = CustomBatchRunner(f'baseline_purerandom_{str(speed)}.feather')
-        batch_runner_pr.run_batch(envs=env_list, policies=[policies[2]], batch_size=10)
+        batch_runner_pr = CustomBatchRunner(f'speed_diff_purerandom_{str(speed)}.feather')
+        batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy()], batch_size=10)
 
