@@ -40,7 +40,7 @@ class CustomBatchRunner(BatchRunner):
 
 
 runners = [
-    Runner(action_speed=6, memory_decay_percentage=5),
+    Runner(action_speed=0, memory_decay_percentage=0),
 ]
 
 env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=10) for _ in range(100)]

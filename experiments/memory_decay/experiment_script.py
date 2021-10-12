@@ -47,13 +47,15 @@ runners = [
 
 env = MazeRunnerEnv(runners=runners, day_length=120, maze_size=16)
 
-
 if __name__ == '__main__':
-
-    batch_runner = CustomBatchRunner(f'memory_decay_Pathfinder_0.feather')
-    batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy()], batch_size=10)
-
-    for decay in range(5, 31, 5):
+    for decay in range(0, 31, 5):
         runners[0].memory_decay_percentage = decay
-        batch_runner = CustomBatchRunner(f'memory_decay_Pathfinder_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy()], batch_size=50)
+
+        batch_runner = CustomBatchRunner(f'memory_decay_pathfinder_{str(decay)}.feather')
+        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy()], batch_size=1)
+
+        batch_runner = CustomBatchRunner(f'memory_decay_leaftracker_{str(decay)}.feather')
+        batch_runner.run_batch(envs=[env], policies=[LeafTrackerPolicy()], batch_size=1)
+
+        batch_runner = CustomBatchRunner(f'memory_decay_purerandom_{str(decay)}.feather')
+        batch_runner.run_batch(envs=[env], policies=[PureRandomPolicy()], batch_size=1)
