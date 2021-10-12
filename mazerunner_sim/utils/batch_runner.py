@@ -61,19 +61,21 @@ class BatchRunner(metaclass=abc.ABCMeta):
         hidden_state = None
         done = False
         observations = env.get_observations()
+        try:
+            while not done:
+                # For every agent, decide an action according to the observation
+                actions = {runner_id: policies[runner_id].decide_action(observation) for runner_id, observation in observations.items()}
 
-        while not done:
-            # For every agent, decide an action according to the observation
-            actions = {runner_id: policies[runner_id].decide_action(observation) for runner_id, observation in observations.items()}
+                # Let the actions take place in the environment
+                observations, reward, done, info = env.step(actions)
 
-            # Let the actions take place in the environment
-            observations, reward, done, info = env.step(actions)
-
-            # Update data
-            hidden_state = cls.update(env, hidden_state)
-
-        summary = cls.finish(env, hidden_state)
-        return summary
+                # Update data
+                hidden_state = cls.update(env, hidden_state)
+            summary = cls.finish(env, hidden_state)
+            return summary
+        except Exception as e:
+            print(f"A Error occurred: {e}. Skipping this run in the batch")
+            return None
 
     def run_batch(self, envs: Sequence[MazeRunnerEnv], policies: Sequence[BasePolicy], batch_size: int) -> None:
         """

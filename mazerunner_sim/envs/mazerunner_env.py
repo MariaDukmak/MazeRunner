@@ -131,9 +131,18 @@ class MazeRunnerEnv(gym.Env):
         return reward
 
     def _auction_step(self, actions: Dict[int, AuctionAction]):
-        # maak tasks (posities uit unexplored gebied)
+        alive_runners = [r for r in self.runners if r.alive]
+        assignments: List[Tuple[int, int], Runner, float] = []
+        e = 1 / (len(alive_runners) + 1)
+        while len(assignments) < len(alive_runners):
+            for runner_id, runner in enumerate(self.runners):
+                if runner.alive and not any(r == runner for _, r, _ in assignments):
+                    highest, second_highest = None, None
+                    for task_id, task in enumerate(self.tasks):
+                        previous_bid =
+                        relative_value = actions[runner_id][task_id] -
         # actions = V
-        #
+        # TODO: Richard en jelle, fix
         pass
 
     def reset(self):
