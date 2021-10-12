@@ -43,13 +43,23 @@ runners = [
     Runner(action_speed=6, memory_decay_percentage=5),
 ]
 policies = [
+    LeafTrackerPolicy(),
     PathFindingPolicy(),
+    PureRandomPolicy(),
 ]
-env = MazeRunnerEnv(runners=runners, day_length=400, maze_size=10)
+
+env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=10) for _ in range(100)]
 
 
 if __name__ == '__main__':
     for speed in range(0, 11, 2):
         runners[0].action_speed = speed
-        batch_runner = CustomBatchRunner(f'snelheid_pathfinder_{str(speed)}.feather')
-        batch_runner.run_batch(envs=[env], policies=policies, batch_size=10)
+        batch_runner_lt = CustomBatchRunner(f'baseline_leaftracker_{str(speed)}.feather')
+        batch_runner_lt.run_batch(envs=env_list, policies=[policies[0]], batch_size=10)
+
+        batch_runner_pf = CustomBatchRunner(f'baseline_pathfinder_{str(speed)}.feather')
+        batch_runner_pf.run_batch(envs=env_list, policies=[policies[1]], batch_size=10)
+
+        batch_runner_pr = CustomBatchRunner(f'baseline_purerandom_{str(speed)}.feather')
+        batch_runner_pr.run_batch(envs=env_list, policies=[policies[2]], batch_size=10)
+

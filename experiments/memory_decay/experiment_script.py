@@ -20,11 +20,13 @@ class CustomBatchRunner(BatchRunner):
     @staticmethod
     def update(env: MazeRunnerEnv, data: Union[HiddenState, None]) -> HiddenState:
         """
-        Update function per batch.
+        Update function per step in batch.
         :param env: Mazeenvironment.
         :param data: data that have been generated from a simulation
         """
-        return {}
+        n_alive = sum([r.alive for r in env.runners])
+        explored = [r.explored.tolist() for r in env.runners]
+        return {'time': env.time, 'n_alive': n_alive, 'explored': explored}
 
     @staticmethod
     def finish(env: MazeRunnerEnv, data: HiddenState) -> dict:

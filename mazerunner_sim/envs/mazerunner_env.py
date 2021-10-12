@@ -50,6 +50,8 @@ class MazeRunnerEnv(gym.Env):
 
         self.rendered_background = render_background(self.maze, self.leaves, self.safe_zone)
 
+        # Calculate distance to end of maze for calculating day length # TODO
+
     def step(self, actions: Dict[int, Action]) -> Tuple[Dict[int, Observation], float, bool, dict]:
         """
         Taken an step in the environment.
@@ -117,6 +119,10 @@ class MazeRunnerEnv(gym.Env):
 
         # Observations
         observations = self.get_observations()
+
+        # End simulation if agents surpassed a year, the sim wil end
+        if self.time > self.day_length * 365:
+            self.done = True
 
         return observations, reward, self.done, {}
 
