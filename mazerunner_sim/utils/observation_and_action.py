@@ -32,6 +32,7 @@ class MazeObservation(NamedTuple):
     runner_location: Tuple[int, int]
     time_till_end_of_day: int
     action_speed: int
+    assigned_task: Tuple[int, int]
 
 
 AuctionObservation = Sequence[Tuple[int, int]]

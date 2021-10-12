@@ -12,7 +12,7 @@ from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, 
 
 from mazerunner_sim.envs.agents.runner import Runner
 
-from mazerunner_sim.utils.observation_and_action import Observation, Action, MazeAction, AuctionAction
+from mazerunner_sim.utils.observation_and_action import Observation, Action, MazeAction, AuctionAction, MazeObservation
 
 import numpy as np
 
@@ -30,6 +30,7 @@ class MazeRunnerEnv(gym.Env):
     time: int
     total_rewards_given: float
     runners: List[Runner]
+    tasks: List[Tuple[int, int]]
 
     DEATH_PUNISHMENT = 99999
 
@@ -59,7 +60,7 @@ class MazeRunnerEnv(gym.Env):
         """
 
         if self.time % self.day_length == 0:
-            self._auction_step()
+            self._auction_step(actions)
             reward = 0
         else:
             reward = self._maze_step(actions)
@@ -167,19 +168,37 @@ class MazeRunnerEnv(gym.Env):
 
         :return A list of runner-observations, take a look at it's documentation for more detail
         """
-        return {
-            runner_id: Observation(
-                explored=runner.explored.copy(),
-                known_maze=runner.known_maze.copy(),
-                known_leaves=runner.known_leaves.copy(),
-                safe_zone=self.safe_zone,
-                runner_location=(runner.location[0], runner.location[1]),
-                time_till_end_of_day=self.time_till_end_of_day(),
-                action_speed=runner.action_speed,
-            )
-            for runner_id, runner in enumerate(self.runners)
-            if runner.check_status_speed()
-        }
+        if self.time % self.day_length == 0: # maybe one off. TODO
+            return {
+                runner_id: MazeObservation(
+                    explored=runner.explored.copy(),
+                    known_maze=runner.known_maze.copy(),
+                    known_leaves=runner.known_leaves.copy(),
+                    safe_zone=self.safe_zone,
+                    runner_location=(runner.location[0], runner.location[1]),
+                    time_till_end_of_day=self.time_till_end_of_day(),
+                    action_speed=runner.action_speed,
+                    assigned_task=runner.assigned_task
+                )
+                for runner_id, runner in enumerate(self.runners)
+                if runner.check_status_speed() and runner.alive
+            }
+        else:
+            # Make tasks from unexplored area
+            tasks: List[Tuple[int, int]] = []
+            combined_explored_map: np.array = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
+            # TODO
+            r_alive = sum([1 for r in self.runners if r.alive])
+            while len(tasks) < len(range(r_alive)):
+                random_coord = np.arange(combined_explored_map.shape[1]), np.arange(combined_explored_map.shape[0])
+                if combined_explored_map[random_coord] is not True:
+                    tasks.append(random_coord)
+            self.tasks = tasks
+            return {
+                runner_id: tasks
+                for runner_id, runner in enumerate(self.runners)
+                if runner.alive
+            }
 
     def time_till_end_of_day(self) -> int:
         """Get number of time-steps left till the end of the day"""

@@ -1,5 +1,7 @@
 """The Runner class."""
 
+from typing import Tuple
+
 import numpy as np
 
 
@@ -11,6 +13,7 @@ class Runner:
     explored: np.array
     known_maze: np.array
     known_leaves: np.array
+    assigned_task: Tuple[int, int]
 
     def __init__(self, action_speed: int = 10, memory_decay_percentage: int = 0):
         """
@@ -76,3 +79,4 @@ class Runner:
         self.known_maze = safe_zone.copy()
         self.known_leaves = np.logical_and(leaves, self.explored)
         self.safe_zone_spawn = safe_zone.copy()
+        self.assigned_task = (0, 0)

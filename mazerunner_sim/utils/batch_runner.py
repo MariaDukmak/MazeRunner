@@ -87,7 +87,8 @@ class BatchRunner(metaclass=abc.ABCMeta):
         with Pool() as pool:
             results = []
             for result in tqdm.tqdm(pool.imap_unordered(self._run_single, simulator_params), total=batch_size):
-                results.append(result)
+                if result is not None:
+                    results.append(result)
         # save results
         table = pa.table({column: [row[column] for row in results] for column in results[0].keys()})
         feather.write_feather(table, self.filename)
