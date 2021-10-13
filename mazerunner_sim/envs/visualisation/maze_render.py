@@ -3,7 +3,7 @@ import copy
 
 from pathlib import Path
 
-from typing import List, Union
+from typing import Union
 
 from PIL import Image, ImageDraw
 
