@@ -4,6 +4,7 @@ from typing import Union
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
+import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -49,11 +50,11 @@ if __name__ == '__main__':
     for speed in range(0, 15, 2):
         runners[0].action_speed = speed
         batch_runner_lt = CustomBatchRunner(f'speed_diff_leaftracker_{str(speed)}.feather')
-        batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy()], batch_size=10)
+        batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy()]*3, batch_size=10)
 
         batch_runner_pf = CustomBatchRunner(f'speed_diff_pathfinder_{str(speed)}.feather')
-        batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy()], batch_size=10)
+        batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy()]*3, batch_size=10)
 
         batch_runner_pr = CustomBatchRunner(f'speed_diff_purerandom_{str(speed)}.feather')
-        batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy()], batch_size=10)
+        batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy()]*3, batch_size=10)
 

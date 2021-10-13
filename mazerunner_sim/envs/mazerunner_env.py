@@ -1,8 +1,9 @@
 """OpenAI gym environment for the MazeRunner."""
 
-from typing import List, Tuple, Dict, Union
-
-from PIL import Image
+from typing import List, Tuple, Dict, Union, Sequence
+import math
+import random
+from functools import reduce
 
 import gym
 
@@ -13,10 +14,6 @@ from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, 
 from mazerunner_sim.envs.agents.runner import Runner
 
 from mazerunner_sim.utils.observation_and_action import Observation, Action
-
-import numpy as np
-
-from functools import reduce
 
 
 class MazeRunnerEnv(gym.Env):
@@ -135,11 +132,6 @@ class MazeRunnerEnv(gym.Env):
 
         return reward
 
-        # End simulation if agents surpassed a year, the sim wil end
-        if self.time > self.day_length * 365:
-            self.done = True
-
-        return observations, reward, self.done, {}
     def _auction_tasks(self, worths: Dict[int, Sequence[float]], tasks: Sequence[Tuple[int, int]]):
         assignments: Dict[int, Tuple[Runner, float]] = {}  # key: task_id, value: (runner, bid)
         small_value = 1 / (len(worths) + 1)

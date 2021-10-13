@@ -4,6 +4,7 @@ from typing import Union
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
+import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -19,11 +20,13 @@ class CustomBatchRunner(BatchRunner):
     @staticmethod
     def update(env: MazeRunnerEnv, data: Union[HiddenState, None]) -> HiddenState:
         """
-        Update function per batch.
+        Update function per step in batch.
         :param env: Mazeenvironment.
         :param data: data that have been generated from a simulation
         """
-        return {}
+        n_alive = sum([r.alive for r in env.runners])
+        explored = [r.explored.tolist() for r in env.runners]
+        return {'time': env.time, 'n_alive': n_alive, 'explored': explored}
 
     @staticmethod
     def finish(env: MazeRunnerEnv, data: HiddenState) -> dict:
@@ -42,18 +45,19 @@ runners = [
     Runner(action_speed=0, memory_decay_percentage=0),
 ]
 
-env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=10) for _ in range(100)]
+env = MazeRunnerEnv(runners=runners, day_length=120, maze_size=16)
 
 
 if __name__ == '__main__':
-    for speed in range(0, 15, 2):
-        runners[0].action_speed = speed
-        batch_runner_lt = CustomBatchRunner(f'speed_diff_leaftracker_{str(speed)}.feather')
-        batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy()], batch_size=10)
+    for decay in range(0, 31, 5):
+        runners[0].memory_decay_percentage = decay
 
-        batch_runner_pf = CustomBatchRunner(f'speed_diff_pathfinder_{str(speed)}.feather')
-        batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy()], batch_size=10)
+        batch_runner = CustomBatchRunner(f'memory_decay_pathfinder_{str(decay)}.feather')
+        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy()]*3, batch_size=1)
 
-        batch_runner_pr = CustomBatchRunner(f'speed_diff_purerandom_{str(speed)}.feather')
-        batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy()], batch_size=10)
+        batch_runner = CustomBatchRunner(f'memory_decay_leaftracker_{str(decay)}.feather')
+        batch_runner.run_batch(envs=[env], policies=[LeafTrackerPolicy()]*3, batch_size=1)
+
+        batch_runner = CustomBatchRunner(f'memory_decay_purerandom_{str(decay)}.feather')
+        batch_runner.run_batch(envs=[env], policies=[PureRandomPolicy()]*3, batch_size=1)
 
