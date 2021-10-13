@@ -4,6 +4,7 @@ from typing import List, Tuple, Dict, Union, Sequence
 from PIL import Image
 from functools import reduce
 import math
+import random
 
 import gym
 import numpy as np
@@ -11,7 +12,7 @@ import numpy as np
 from mazerunner_sim.envs.maze_generator import generate_maze
 from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, render_background
 from mazerunner_sim.envs.agents.runner import Runner
-from mazerunner_sim.utils.observation_and_action import Observation, Action, MazeAction, AuctionAction, MazeObservation
+from mazerunner_sim.utils.observation_and_action import Observation, Action
 
 
 class MazeRunnerEnv(gym.Env):
@@ -52,30 +53,12 @@ class MazeRunnerEnv(gym.Env):
         :param actions: list of actions
         :return: observations, reward, done, info.
         """
+        if self.time % self.day_length == 0:    # Night
+            reward = self._night_step(actions)
+        else:   # Day
+            reward = self._day_step(actions)
 
-        if self.time % self.day_length == 0:
-            # Kill the runners that are still in the maze at the end of the day
-            if self.time % self.day_length == 0:
-                for runner in self.runners:
-                    if not self.safe_zone[tuple(runner.location)]:
-                        runner.alive = False
-
-            # Share maps between those alive
-            combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
-            combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
-            combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
-            for runner in self.runners:
-                if runner.alive:
-                    forget_mask = runner.memory_decay_map_generator()
-
-                    runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy())
-                    runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
-                    runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
-
-            self._auction_step(actions, self.tasks)
-            reward = 0
-        else:
-            reward = self._maze_step(actions)
+        self.total_rewards_given += reward
 
         # Observations
         observations = self.get_observations()
@@ -85,7 +68,9 @@ class MazeRunnerEnv(gym.Env):
 
         return observations, reward, self.done, {}
 
-    def _maze_step(self, actions: Dict[int, MazeAction]):
+    def _day_step(self, actions: Dict[int, Action]) -> float:
+        """Let the runners run during a day step"""
+        reward = -1
 
         # Let the runners take a step
         for runner_id, action in actions.items():
@@ -95,49 +80,70 @@ class MazeRunnerEnv(gym.Env):
                                  [0, 1],
                                  [-1, 0],
                                  [1, 0],
-                                 [0, 0]][action])
+                                 [0, 0]][action.step_direction])
                 # if the step is actually possible, take the step
                 if self.maze[tuple(runner.location + step)[::-1]]:
                     runner.location += step
 
-        # Update maps
-        for r in self.runners:
-            if r.alive:
-                r.update_map(
-                    self.maze[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2],
-                    self.leaves[r.location[1] - 1:r.location[1] + 2, r.location[0] - 1:r.location[0] + 2]
-                )
+                    # update map
+                    runner.update_map(
+                        self.maze[runner.location[1] - 1:runner.location[1] + 2, runner.location[0] - 1:runner.location[0] + 2],
+                        self.leaves[runner.location[1] - 1:runner.location[1] + 2, runner.location[0] - 1:runner.location[0] + 2]
+                    )
 
-        # Reward & done
-        reward = -1
-        # if a runner found the exit
-        runners_at_exit = [r.location[0] == 0 or r.location[0] == self.maze.shape[1] - 1 or
-                           r.location[1] == 0 or r.location[1] == self.maze.shape[0] - 1
-                           for r in self.runners]
-        if any(runners_at_exit):
-            self.done = True
-            self.found_exit = self.runners[runners_at_exit.index(True)]
-        # if all runners are dead
-        elif not any(runner.alive for runner in self.runners):
-            self.done = True
-            reward -= self.DEATH_PUNISHMENT + self.total_rewards_given
-        self.total_rewards_given += reward
+                    # if found the exit
+                    if runner.location[0] == 0 or runner.location[0] == self.maze.shape[1] - 1 or \
+                            runner.location[1] == 0 or runner.location[1] == self.maze.shape[0] - 1:
+                        self.done = True
+                        self.found_exit = runner
 
         return reward
 
-    def _auction_step(self, actions: Dict[int, AuctionAction], tasks: Sequence[Tuple[int, int]]):
+    def _night_step(self, actions: Dict[int, Action]) -> float:
+        reward = 0
+
+        # Kill the runners that are still in the maze
+        if self.time % self.day_length == 0:
+            for runner in self.runners:
+                if not self.safe_zone[tuple(runner.location)]:
+                    runner.alive = False
+
+        # if all runners are dead
+        if not any(runner.alive for runner in self.runners):
+            self.done = True
+            reward -= self.DEATH_PUNISHMENT + self.total_rewards_given
+
+        # Share maps between those alive
+        combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
+        combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
+        combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
+        for runner in self.runners:
+            if runner.alive:
+                forget_mask = runner.memory_decay_map_generator()
+
+                runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy())
+                runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
+                runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
+
+        # Assign tasks according to an auction
+        worths = {i: action.task_worths for i, action in actions.items()}
+        self._auction_tasks(worths, self.tasks)
+
+        return reward
+
+    def _auction_tasks(self, worths: Dict[int, Sequence[float]], tasks: Sequence[Tuple[int, int]]):
         assignments: Dict[int, Tuple[Runner, float]] = {}  # key: task_id, value: (runner, bid)
-        small_value = 1 / (len(actions) + 1)
-        while len(assignments) < len(actions):
+        small_value = 1 / (len(worths) + 1)
+        while len(assignments) < len(worths):
             for runner_id, runner in enumerate(self.runners):
-                if runner_id in actions and not any(r == runner for r, _ in assignments.values()):
+                if runner_id in worths and not any(r == runner for r, _ in assignments.values()):
                     highest, second_highest = -math.inf, -math.inf
                     highest_task = None
-                    for task_id in range(len(actions)):
+                    for task_id in range(len(worths)):
                         if task_id in assignments:
-                            relative_value = actions[runner_id][task_id] - assignments[task_id][1]
+                            relative_value = worths[runner_id][task_id] - assignments[task_id][1]
                         else:
-                            relative_value = actions[runner_id][task_id]
+                            relative_value = worths[runner_id][task_id]
                         if relative_value >= highest:
                             highest, second_highest = relative_value, highest
                             highest_task = task_id
@@ -164,43 +170,40 @@ class MazeRunnerEnv(gym.Env):
         for runner in self.runners:
             runner.reset(center_coord.copy(), self.safe_zone, self.leaves)
 
-    def get_observations(self) -> Dict[int, Observation]:
+    def get_observations(self, first_observation: bool = False) -> Dict[int, Observation]:
         """
         Get information about the environment location, returns walls.
 
         :return A list of runner-observations, take a look at it's documentation for more detail
         """
-        if self.time % self.day_length == 0:  # maybe one off. TODO
-            return {
-                runner_id: MazeObservation(
-                    explored=runner.explored.copy(),
-                    known_maze=runner.known_maze.copy(),
-                    known_leaves=runner.known_leaves.copy(),
-                    safe_zone=self.safe_zone,
-                    runner_location=(runner.location[0], runner.location[1]),
-                    time_till_end_of_day=self.time_till_end_of_day(),
-                    action_speed=runner.action_speed,
-                    assigned_task=runner.assigned_task
-                )
-                for runner_id, runner in enumerate(self.runners)
-                if runner.check_status_speed() and runner.alive
-            }
-        else:
+        tasks: List[Tuple[int, int]] = []
+
+        if (self.time + 1) % self.day_length == 0 or first_observation:    # time-step before night
             # Make tasks from unexplored area
-            tasks: List[Tuple[int, int]] = []
             combined_explored_map: np.array = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
-            # TODO
             r_alive = sum([1 for r in self.runners if r.alive])
-            while len(tasks) < len(range(r_alive)):
-                random_coord = np.arange(combined_explored_map.shape[1]), np.arange(combined_explored_map.shape[0])
-                if combined_explored_map[random_coord] is not True:
-                    tasks.append(random_coord)
+            while len(tasks) < r_alive:
+                rand_x = random.randint(0, combined_explored_map.shape[1]-1)
+                rand_y = random.randint(0, combined_explored_map.shape[0]-1)
+                if not combined_explored_map[rand_y, rand_x]:
+                    tasks.append((rand_x, rand_y))
             self.tasks = tasks
-            return {
-                runner_id: AuctionAction(tasks)
-                for runner_id, runner in enumerate(self.runners)
-                if runner.alive
-            }
+
+        return {
+            runner_id: Observation(
+                explored=runner.explored.copy(),
+                known_maze=runner.known_maze.copy(),
+                known_leaves=runner.known_leaves.copy(),
+                safe_zone=self.safe_zone,
+                runner_location=(runner.location[0], runner.location[1]),
+                time_till_end_of_day=self.time_till_end_of_day(),
+                action_speed=runner.action_speed,
+                assigned_task=runner.assigned_task,
+                tasks=tasks
+            )
+            for runner_id, runner in enumerate(self.runners)
+            if runner.alive
+        }
 
     def time_till_end_of_day(self) -> int:
         """Get number of time-steps left till the end of the day"""

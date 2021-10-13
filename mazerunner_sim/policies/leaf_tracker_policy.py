@@ -91,3 +91,16 @@ class LeafTrackerPolicy(PathFindingPolicy):
         return float(np.prod([1 - manhattan_distance(coord, proposed_exit) / largest_dist for coord in known_leaves] +
                              [manhattan_distance(coord, proposed_exit) / largest_dist for coord in known_not_leaves]
                              )) * 2**(len(known_not_leaves) + len(known_leaves))
+
+    def q_task(self, observation: Observation) -> List[float]:
+        """
+        Calculate the estimated quality of each of the given tasks.
+
+        :param observation:
+        :return:
+        """
+        # return [
+        #     manhattan_distance(, task) / (observation.action_speed + 1)
+        #     for task in observation.tasks
+        # ]
+        raise NotImplementedError()
