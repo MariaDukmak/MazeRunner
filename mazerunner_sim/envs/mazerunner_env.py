@@ -1,6 +1,6 @@
 """OpenAI gym environment for the MazeRunner."""
 
-from typing import List, Tuple, Dict, Union
+from typing import List, Tuple, Dict, Union, Sequence
 from PIL import Image
 from functools import reduce
 import math
@@ -72,7 +72,7 @@ class MazeRunnerEnv(gym.Env):
                     runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
                     runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
-            self._auction_step(actions)
+            self._auction_step(actions, self.tasks)
             reward = 0
         else:
             reward = self._maze_step(actions)
@@ -125,7 +125,7 @@ class MazeRunnerEnv(gym.Env):
 
         return reward
 
-    def _auction_step(self, actions: Dict[int, AuctionAction]):
+    def _auction_step(self, actions: Dict[int, AuctionAction], tasks: Sequence[Tuple[int, int]]):
         assignments: Dict[int, Tuple[Runner, float]] = {}  # key: task_id, value: (runner, bid)
         small_value = 1 / (len(actions) + 1)
         while len(assignments) < len(actions):
@@ -133,7 +133,7 @@ class MazeRunnerEnv(gym.Env):
                 if runner_id in actions and not any(r == runner for r, _ in assignments.values()):
                     highest, second_highest = -math.inf, -math.inf
                     highest_task = None
-                    for task_id in range(len(self.tasks)):
+                    for task_id in range(len(actions)):
                         if task_id in assignments:
                             relative_value = actions[runner_id][task_id] - assignments[task_id][1]
                         else:
@@ -146,7 +146,7 @@ class MazeRunnerEnv(gym.Env):
                     assignments[highest_task] = (runner, assignments.get(highest_task, (0, 0))[1] + highest - second_highest + small_value)
 
         for task_id, (runner, bid) in assignments.items():
-            runner.assigned_task = self.tasks[task_id]
+            runner.assigned_task = tasks[task_id]
 
     def reset(self):
         """
@@ -197,7 +197,7 @@ class MazeRunnerEnv(gym.Env):
                     tasks.append(random_coord)
             self.tasks = tasks
             return {
-                runner_id: tasks
+                runner_id: AuctionAction(tasks)
                 for runner_id, runner in enumerate(self.runners)
                 if runner.alive
             }
