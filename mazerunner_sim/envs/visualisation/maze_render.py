@@ -3,7 +3,7 @@ import copy
 
 from pathlib import Path
 
-from typing import List, Union
+from typing import Union
 
 from PIL import Image, ImageDraw
 
@@ -194,6 +194,9 @@ def render_agent_in_step(env, render_agent_id: Union[int, None] = None) -> Image
     tile_width = env.rendered_background.width // env.maze.shape[0]
     tile_height = env.rendered_background.height // env.maze.shape[1]
 
+    # Load marker sprite
+    targer_marker = Image.open(textures_path / "objective_marker.png")
+
     for index, runner in enumerate(env.runners):
         agent_icon_copy = agent_icon.copy()
 
@@ -218,6 +221,12 @@ def render_agent_in_step(env, render_agent_id: Union[int, None] = None) -> Image
     if render_agent_id is not None:
         copy_background = render_explored_maze(copy_background, env.runners[render_agent_id])
 
+    for index, runner in enumerate(env.runners):
+        copy_background.paste(
+            targer_marker,
+            (runner.assigned_task[0] * tile_width, runner.assigned_task[1] * tile_height),
+            targer_marker
+        )
     ImageDraw.Draw(copy_background).text((5, 0), f"Time: {env.time}, time left till end of day: {env.time_till_end_of_day()}")
 
     return copy_background
@@ -251,4 +260,5 @@ def render_explored_maze(background_image: Image, runner: Runner) -> Image:
 
     # Blend cloud layer with background
     blended_background = Image.alpha_composite(copy_background, cloud_layer)
+
     return blended_background
