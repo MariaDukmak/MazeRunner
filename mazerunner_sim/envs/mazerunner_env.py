@@ -117,21 +117,22 @@ class MazeRunnerEnv(gym.Env):
             self.done = True
             reward -= self.DEATH_PUNISHMENT + self.total_rewards_given
 
-        # Share maps between those alive
-        combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
-        combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
-        combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
-        for runner in self.runners:
-            if runner.alive:
-                forget_mask = runner.memory_decay_map_generator()
+        if not self.done:
+            # Share maps between those alive
+            combined_explored_map = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
+            combined_maze_map = reduce(np.logical_or, [r.known_maze for r in self.runners if r.alive])
+            combined_leaves_map = reduce(np.logical_or, [r.known_leaves for r in self.runners if r.alive])
+            for runner in self.runners:
+                if runner.alive:
+                    forget_mask = runner.memory_decay_map_generator()
 
-                runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy())
-                runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
-                runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
+                    runner.explored = np.logical_and(combined_explored_map.copy(), forget_mask.copy())
+                    runner.known_maze = np.logical_and(combined_maze_map.copy(), forget_mask.copy())
+                    runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
-        # Assign tasks according to an auction
-        worths = {i: [w / sum(action.task_worths) for w in action.task_worths] for i, action in actions.items()}
-        self._auction_tasks(worths, self.tasks)
+            # Assign tasks according to an auction
+            worths = {i: [w / sum(action.task_worths) for w in action.task_worths] for i, action in actions.items()}
+            self._auction_tasks(worths, self.tasks)
 
         return reward
 
@@ -185,13 +186,17 @@ class MazeRunnerEnv(gym.Env):
         if (self.time + 1) % self.day_length == 0 or first_observation:    # time-step before night
             # Make tasks from unexplored area
             combined_explored_map: np.array = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
-            r_alive = sum([1 for r in self.runners if r.alive])
-            while len(tasks) < math.ceil(r_alive * 2):
-                rand_x = random.randint(0, combined_explored_map.shape[1] - 1)
-                rand_y = random.randint(0, combined_explored_map.shape[0] - 1)
-                if not combined_explored_map[rand_y, rand_x]:
-                    tasks.append((rand_x, rand_y))
-            self.tasks = tasks
+
+            if np.all(combined_explored_map):
+                tasks = self.tasks
+            else:
+                r_alive = sum([1 for r in self.runners if r.alive])
+                while len(tasks) < math.ceil(r_alive * 2):
+                    rand_x = random.randint(0, combined_explored_map.shape[1] - 1)
+                    rand_y = random.randint(0, combined_explored_map.shape[0] - 1)
+                    if not combined_explored_map[rand_y, rand_x]:
+                        tasks.append((rand_x, rand_y))
+                self.tasks = tasks
 
         return {
             runner_id: Observation(
