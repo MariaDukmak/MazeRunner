@@ -5,7 +5,7 @@ An agent takes an action, the environment uses that action to update and returns
 Observations and actions are just data containers.
 """
 
-from typing import NamedTuple, Tuple, Union, Sequence
+from typing import NamedTuple, Tuple, Sequence
 
 import numpy as np
 

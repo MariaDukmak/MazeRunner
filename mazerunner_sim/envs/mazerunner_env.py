@@ -126,7 +126,7 @@ class MazeRunnerEnv(gym.Env):
                 runner.known_leaves = np.logical_and(combined_leaves_map.copy(), forget_mask.copy())
 
         # Assign tasks according to an auction
-        worths = {i: [w/sum(action.task_worths) for w in action.task_worths] for i, action in actions.items()}
+        worths = {i: [w / sum(action.task_worths) for w in action.task_worths] for i, action in actions.items()}
         self._auction_tasks(worths, self.tasks)
 
         return reward
@@ -183,8 +183,8 @@ class MazeRunnerEnv(gym.Env):
             combined_explored_map: np.array = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
             r_alive = sum([1 for r in self.runners if r.alive])
             while len(tasks) < math.ceil(r_alive * 2):
-                rand_x = random.randint(0, combined_explored_map.shape[1]-1)
-                rand_y = random.randint(0, combined_explored_map.shape[0]-1)
+                rand_x = random.randint(0, combined_explored_map.shape[1] - 1)
+                rand_y = random.randint(0, combined_explored_map.shape[0] - 1)
                 if not combined_explored_map[rand_y, rand_x]:
                     tasks.append((rand_x, rand_y))
             self.tasks = tasks

@@ -1,7 +1,6 @@
 """Policy that uses Bayes Theorem on the leaves."""
 
 from typing import List, Tuple
-import math
 
 import numpy as np
 

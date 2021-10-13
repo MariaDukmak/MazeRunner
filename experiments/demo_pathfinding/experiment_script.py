@@ -6,7 +6,7 @@ from mazerunner_sim.envs import MazeRunnerEnv, Runner
 
 
 runners = [
-    Runner(action_speed=i//2)
+    Runner(action_speed=i // 2)
     for i in range(1)
 ]
 policies = [
