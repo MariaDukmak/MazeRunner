@@ -6,13 +6,12 @@ import random
 from functools import reduce
 
 import gym
+import numpy as np
+from PIL import Image
 
 from mazerunner_sim.envs.maze_generator import generate_maze
-
 from mazerunner_sim.envs.visualisation.maze_render import render_agent_in_step, render_background
-
 from mazerunner_sim.envs.agents.runner import Runner
-
 from mazerunner_sim.utils.observation_and_action import Observation, Action
 
 
@@ -66,6 +65,10 @@ class MazeRunnerEnv(gym.Env):
 
         # Increment time
         self.time += 1
+
+        # End simulation if agents surpassed a year, the sim wil end
+        if self.time > self.day_length * 365:
+            self.done = True
 
         return observations, reward, self.done, {}
 
