@@ -1,6 +1,7 @@
 """Policy that uses Bayes Theorem on the leaves."""
 
 from typing import List, Tuple
+import math
 
 import numpy as np
 
@@ -12,14 +13,14 @@ from mazerunner_sim.utils.pathfinder import Coord, manhattan_distance
 class LeafTrackerPolicy(PathFindingPolicy):
     """Policy that extends the pathfinding-policy to also consider the leaves in it's q-value function."""
 
-    def __init__(self, path_length_weight: float = 1., leaf_weight: float = 100.):
+    def __init__(self, path_length_weight: float = 1., leaf_weight: float = 1., task_weight: float = 1.):
         """
         Initialize the policy.
 
         :param path_length_weight: How much the distance to the outside of the maze should weigh in the evaluation of a path
         :param leaf_weight: How much the expected exist according to the leaves should weigh in the evaluation of a path
         """
-        super().__init__(path_length_weight=path_length_weight)
+        super().__init__(path_length_weight=path_length_weight, task_weight=task_weight)
         self.leaf_weight = leaf_weight
 
     def decide_action(self, observation: Observation) -> Action:
@@ -68,8 +69,11 @@ class LeafTrackerPolicy(PathFindingPolicy):
         # q_value -= min(target_x, map_width - target_x, target_y, map_height - target_y)
 
         # Expected exit according to the leaves
-        for anchor, prob in self.probs_exits.items():
-            q_value += prob / (manhattan_distance((target_x, target_y), anchor) + 0.01) * self.leaf_weight
+        # for anchor, prob in self.probs_exits.items():
+        #     q_value += prob / (manhattan_distance((target_x, target_y), anchor) + 0.01) * self.leaf_weight
+
+        # Follow task
+        q_value -= manhattan_distance(observation.assigned_task, (target_x, target_y))
 
         return q_value
 
@@ -99,8 +103,8 @@ class LeafTrackerPolicy(PathFindingPolicy):
         :param observation:
         :return:
         """
-        # return [
-        #     manhattan_distance(, task) / (observation.action_speed + 1)
-        #     for task in observation.tasks
-        # ]
-        raise NotImplementedError()
+        most_likely_exit = max(self.probs_exits, key=self.probs_exits.get)
+        return [
+            -manhattan_distance(most_likely_exit, task)
+            for task in observation.tasks
+        ]

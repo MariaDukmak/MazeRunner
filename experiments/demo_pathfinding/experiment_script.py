@@ -7,11 +7,11 @@ from mazerunner_sim.envs import MazeRunnerEnv, Runner
 
 runners = [
     Runner(action_speed=i//2)
-    for i in range(10)
+    for i in range(1)
 ]
 policies = [
     PathFindingPolicy(task_weight=1.0)
-    for _ in range(10)
+    for _ in range(1)
 ]
 
 env = MazeRunnerEnv(runners, day_length=200, maze_size=28)

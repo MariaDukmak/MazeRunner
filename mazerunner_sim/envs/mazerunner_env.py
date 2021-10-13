@@ -182,7 +182,7 @@ class MazeRunnerEnv(gym.Env):
             # Make tasks from unexplored area
             combined_explored_map: np.array = reduce(np.logical_or, [r.explored for r in self.runners if r.alive])
             r_alive = sum([1 for r in self.runners if r.alive])
-            while len(tasks) < r_alive:
+            while len(tasks) < math.ceil(r_alive):
                 rand_x = random.randint(0, combined_explored_map.shape[1]-1)
                 rand_y = random.randint(0, combined_explored_map.shape[0]-1)
                 if not combined_explored_map[rand_y, rand_x]:

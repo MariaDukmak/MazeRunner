@@ -143,7 +143,7 @@ class PathFindingPolicy(BasePolicy):
         :return:
         """
         return [
-            manhattan_distance(observation.runner_location, task) / (observation.action_speed+1)
+            -(manhattan_distance(observation.runner_location, task) - observation.time_till_end_of_day / (observation.action_speed+1))**2
             for task in observation.tasks
         ]
 
