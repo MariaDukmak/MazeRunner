@@ -40,18 +40,20 @@ class CustomBatchRunner(BatchRunner):
 
 runners = [
     Runner(action_speed=0, memory_decay_percentage=0),
+    Runner(action_speed=0, memory_decay_percentage=0),
+    Runner(action_speed=0, memory_decay_percentage=0),
 ]
 
 env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=20) for _ in range(30)]
 
 if __name__ == '__main__':
     batch_runner_lt = CustomBatchRunner('baseline_leaftracker_big.feather')
-    batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy()]*3, batch_size=25)
+    batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy() for _n in range(3)], batch_size=25)
 
     batch_runner_pf = CustomBatchRunner('baseline_pathfinder_big.feather')
-    batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy()]*3, batch_size=25)
+    batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy() for _n in range(3)], batch_size=25)
 
     batch_runner_pr = CustomBatchRunner('baseline_purerandom_big.feather')
-    batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy()]*3, batch_size=25)
+    batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy() for _n in range(3)], batch_size=25)
 
 

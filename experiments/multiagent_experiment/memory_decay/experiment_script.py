@@ -43,6 +43,8 @@ class CustomBatchRunner(BatchRunner):
 
 runners = [
     Runner(action_speed=0, memory_decay_percentage=0),
+    Runner(action_speed=0, memory_decay_percentage=0),
+    Runner(action_speed=0, memory_decay_percentage=0),
 ]
 
 env = MazeRunnerEnv(runners=runners, day_length=120, maze_size=16)
@@ -53,11 +55,11 @@ if __name__ == '__main__':
         runners[0].memory_decay_percentage = decay
 
         batch_runner = CustomBatchRunner(f'memory_decay_pathfinder_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy()]*3, batch_size=1)
+        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy() for _ in range(3)], batch_size=1)
 
         batch_runner = CustomBatchRunner(f'memory_decay_leaftracker_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[LeafTrackerPolicy()]*3, batch_size=1)
+        batch_runner.run_batch(envs=[env], policies=[LeafTrackerPolicy() for _ in range(3)], batch_size=1)
 
         batch_runner = CustomBatchRunner(f'memory_decay_purerandom_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[PureRandomPolicy()]*3, batch_size=1)
+        batch_runner.run_batch(envs=[env], policies=[PureRandomPolicy() for _ in range(3)], batch_size=1)
 
