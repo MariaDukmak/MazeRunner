@@ -13,15 +13,14 @@ from mazerunner_sim.utils.pathfinder import Coord, manhattan_distance
 class LeafTrackerPolicy(PathFindingPolicy):
     """Policy that extends the pathfinding-policy to also consider the leaves in it's q-value function."""
 
-    def __init__(self, path_length_weight: float = 1., leaf_weight: float = 1., task_weight: float = 1.):
+    def __init__(self, outside_weight: float = 1., path_length_weight: float = 1., task_weight: float = 1.):
         """
         Initialize the policy.
 
         :param path_length_weight: How much the distance to the outside of the maze should weigh in the evaluation of a path
         :param leaf_weight: How much the expected exist according to the leaves should weigh in the evaluation of a path
         """
-        super().__init__(path_length_weight=path_length_weight, task_weight=task_weight)
-        self.leaf_weight = leaf_weight
+        super().__init__(outside_weight=outside_weight, path_length_weight=path_length_weight, task_weight=task_weight)
 
     def decide_action(self, observation: Observation) -> Action:
         """Take an action, using the observed leaves."""
@@ -65,8 +64,8 @@ class LeafTrackerPolicy(PathFindingPolicy):
         q_value -= len(target_path) * self.path_length_weight
 
         # # Distance to outside
-        # map_width, map_height = observation.known_maze.shape
-        # q_value -= min(target_x, map_width - target_x, target_y, map_height - target_y)
+        map_width, map_height = observation.known_maze.shape
+        q_value -= min(target_x, map_width - target_x, target_y, map_height - target_y)
 
         # Expected exit according to the leaves
         # for anchor, prob in self.probs_exits.items():
@@ -103,8 +102,7 @@ class LeafTrackerPolicy(PathFindingPolicy):
         :param observation:
         :return:
         """
-        most_likely_exit = max(self.probs_exits, key=self.probs_exits.get)
         return [
-            -manhattan_distance(most_likely_exit, task)
+            sum([prob / (manhattan_distance(task, anchor) + 0.01) for anchor, prob in self.probs_exits.items()])
             for task in observation.tasks
         ]

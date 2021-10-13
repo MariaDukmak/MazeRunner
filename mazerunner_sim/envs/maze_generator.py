@@ -79,7 +79,7 @@ def generate_maze(size: int = 16, center_size: int = 4) -> Tuple[np.array, np.ar
     # Creating random openings in the walls
     corrupt_mask = np.zeros(pixels.shape)
     corrupt_mask[1:-1, 1:-1] = np.random.rand(*(pixels.shape - np.array([2, 2])))
-    corrupt_mask = corrupt_mask > 0.5
+    corrupt_mask = corrupt_mask > 0.95
     pixels = np.logical_or(pixels, corrupt_mask)
 
     # Leaves
