@@ -6,14 +6,14 @@ from mazerunner_sim.envs import MazeRunnerEnv, Runner
 
 
 runners = [
-    Runner(action_speed=1),
-    Runner(action_speed=0),
+    Runner(action_speed=i // 2)
+    for i in range(1)
 ]
 policies = [
-    PathFindingPolicy(),
-    PathFindingPolicy(),
+    PathFindingPolicy(task_weight=1.0)
+    for _ in range(1)
 ]
 
-env = MazeRunnerEnv(runners, day_length=100)
+env = MazeRunnerEnv(runners, day_length=200, maze_size=28)
 
-run_simulation(env, policies, wait_key=100, follow_runner_id=0)
+run_simulation(env, policies, wait_key=50, follow_runner_id=0)

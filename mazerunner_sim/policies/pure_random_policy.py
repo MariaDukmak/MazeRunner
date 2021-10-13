@@ -10,4 +10,7 @@ class PureRandomPolicy(BasePolicy):
 
     def decide_action(self, observation: Observation) -> Action:
         """Take a random action, regardless of the observation."""
-        return np.random.choice([Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT])
+        return Action(
+            step_direction=np.random.choice([Action.UP, Action.DOWN, Action.LEFT, Action.RIGHT]),
+            task_worths=[np.random.random() for _ in observation.tasks]
+        )
