@@ -55,6 +55,3 @@ polices = [
 if __name__ == '__main__':
     batch_runner_pr = CustomBatchRunner('all_policies.feather')
     batch_runner_pr.run_batch(envs=env_list, policies=polices, batch_size=100)
-
-
-

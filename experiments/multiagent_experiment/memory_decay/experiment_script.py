@@ -1,10 +1,11 @@
-"""Example of a batch runner experiment to compare the speed of agents."""
+"""Example of a batch runner experiment to compare the memory deacy of agents.
+we were unable to use this experiment due to extremely long run time :(
+"""
 from typing import Union
 
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
-import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -52,14 +53,14 @@ env = MazeRunnerEnv(runners=runners, day_length=120, maze_size=16)
 
 if __name__ == '__main__':
     for decay in range(0, 31, 5):
-        runners[0].memory_decay_percentage = decay
+        for r in runners:
+            r.memory_decay_percentage = decay
 
         batch_runner = CustomBatchRunner(f'memory_decay_pathfinder_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy() for _ in range(3)], batch_size=1)
+        batch_runner.run_batch(envs=[env], policies=[PathFindingPolicy() for _ in range(3)], batch_size=100)
 
         batch_runner = CustomBatchRunner(f'memory_decay_leaftracker_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[LeafTrackerPolicy() for _ in range(3)], batch_size=1)
+        batch_runner.run_batch(envs=[env], policies=[LeafTrackerPolicy() for _ in range(3)], batch_size=100)
 
         batch_runner = CustomBatchRunner(f'memory_decay_purerandom_{str(decay)}.feather')
-        batch_runner.run_batch(envs=[env], policies=[PureRandomPolicy() for _ in range(3)], batch_size=1)
-
+        batch_runner.run_batch(envs=[env], policies=[PureRandomPolicy() for _ in range(3)], batch_size=100)

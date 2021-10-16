@@ -4,7 +4,6 @@ from typing import Union
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
-import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -47,16 +46,14 @@ policies = [
     PathFindingPolicy(),
     PureRandomPolicy(),
 ]
-env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=10) for _ in range(100)]
+env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=20) for _ in range(30)]
 
 if __name__ == '__main__':
-    batch_runner_lt = CustomBatchRunner('baseline_leaftracker_small.feather')
-    batch_runner_lt.run_batch(envs=env_list, policies=[policies[0]], batch_size=100)
+    batch_runner_lt = CustomBatchRunner('baseline_leaftracker_big.feather')
+    batch_runner_lt.run_batch(envs=env_list, policies=[policies[0]], batch_size=25)
 
-    batch_runner_pf = CustomBatchRunner('baseline_pathfinder_small.feather')
-    batch_runner_pf.run_batch(envs=env_list, policies=[policies[1]], batch_size=100)
+    batch_runner_pf = CustomBatchRunner('baseline_pathfinder_big.feather')
+    batch_runner_pf.run_batch(envs=env_list, policies=[policies[1]], batch_size=25)
 
-    batch_runner_pr = CustomBatchRunner('baseline_purerandom_small.feather')
-    batch_runner_pr.run_batch(envs=env_list, policies=[policies[2]], batch_size=100)
-
-
+    batch_runner_pr = CustomBatchRunner('baseline_purerandom_big.feather')
+    batch_runner_pr.run_batch(envs=env_list, policies=[policies[2]], batch_size=25)

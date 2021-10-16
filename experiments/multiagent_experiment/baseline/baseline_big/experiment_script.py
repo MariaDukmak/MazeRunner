@@ -55,5 +55,3 @@ if __name__ == '__main__':
 
     batch_runner_pr = CustomBatchRunner('baseline_purerandom_big.feather')
     batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy() for _n in range(3)], batch_size=25)
-
-

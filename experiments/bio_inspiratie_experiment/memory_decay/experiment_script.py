@@ -4,7 +4,6 @@ from typing import Union
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
-import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -48,6 +47,7 @@ runners = [
 env = MazeRunnerEnv(runners=runners, day_length=120, maze_size=16)
 
 if __name__ == '__main__':
+
     for decay in range(0, 31, 5):
         runners[0].memory_decay_percentage = decay
 

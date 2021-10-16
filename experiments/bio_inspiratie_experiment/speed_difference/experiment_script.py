@@ -56,4 +56,3 @@ if __name__ == '__main__':
 
         batch_runner_pr = CustomBatchRunner(f'speed_diff_purerandom_{str(speed)}.feather')
         batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy()], batch_size=10)
-

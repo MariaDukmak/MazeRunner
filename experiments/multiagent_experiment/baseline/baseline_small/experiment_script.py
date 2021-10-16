@@ -4,7 +4,6 @@ from typing import Union
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
-import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -56,4 +55,3 @@ if __name__ == '__main__':
 
     batch_runner_pr = CustomBatchRunner('baseline_purerandom_small.feather')
     batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy() for _ in range(3)], batch_size=100)
-

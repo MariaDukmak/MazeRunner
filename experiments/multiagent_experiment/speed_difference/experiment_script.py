@@ -1,10 +1,11 @@
-"""Example of a batch runner experiment to compare the speed of agents."""
+"""Example of a batch runner experiment to compare the speed of agents.
+we were unable to use this experiment due to extremely long run time :(
+"""
 from typing import Union
 
 from mazerunner_sim import BatchRunner, HiddenState
 from mazerunner_sim.envs import MazeRunnerEnv, Runner
 from mazerunner_sim.policies import PathFindingPolicy, PureRandomPolicy, LeafTrackerPolicy
-import pyarrow.feather as feather
 
 
 class CustomBatchRunner(BatchRunner):
@@ -42,21 +43,20 @@ class CustomBatchRunner(BatchRunner):
 runners = [
     Runner(action_speed=0, memory_decay_percentage=0),
     Runner(action_speed=0, memory_decay_percentage=0),
-    Runner(action_speed=0, memory_decay_percentage=0),
-    ]
+    Runner(action_speed=0, memory_decay_percentage=0)]
 
 env_list = [MazeRunnerEnv(runners=runners, day_length=300, maze_size=10) for _ in range(100)]
 
 
 if __name__ == '__main__':
     for speed in range(0, 15, 2):
-        runners[0].action_speed = speed
+        for r in runners:
+            r.action_speed = speed
         batch_runner_lt = CustomBatchRunner(f'speed_diff_leaftracker_{str(speed)}.feather')
-        batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy() for _ in range(3)], batch_size=10)
+        batch_runner_lt.run_batch(envs=env_list, policies=[LeafTrackerPolicy() for _ in range(3)], batch_size=100)
 
         batch_runner_pf = CustomBatchRunner(f'speed_diff_pathfinder_{str(speed)}.feather')
-        batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy() for _ in range(3)], batch_size=10)
+        batch_runner_pf.run_batch(envs=env_list, policies=[PathFindingPolicy() for _ in range(3)], batch_size=100)
 
         batch_runner_pr = CustomBatchRunner(f'speed_diff_purerandom_{str(speed)}.feather')
-        batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy() for _ in range(3)], batch_size=10)
-
+        batch_runner_pr.run_batch(envs=env_list, policies=[PureRandomPolicy() for _ in range(3)], batch_size=100)
