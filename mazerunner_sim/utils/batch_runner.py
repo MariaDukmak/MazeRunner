@@ -60,7 +60,7 @@ class BatchRunner(metaclass=abc.ABCMeta):
 
         hidden_state = None
         done = False
-        observations = env.get_observations()
+        observations = env.get_observations(first_observation=True)
         try:
             while not done:
                 # For every agent, decide an action according to the observation

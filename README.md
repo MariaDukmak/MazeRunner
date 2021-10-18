@@ -8,7 +8,7 @@ This git repository houses the challenges for the course *Autonomy By Design*.
 ### [Jira Scrumboard](https://fancymazerunner.atlassian.net/jira/software/projects/DOOL/boards/1)
 
 ### Introduction Simulation
-The simulation is made out of two parts, the `Environment` and the `Policy`.
+The simulation is made out of two main parts, the `Environment` and the `Policy`.
 The image below illustrates the simulation loop:
 
 ![](https://github.com/MariaDukmak/MazeRunner/blob/main/readme_assets/schets_simulatie.png)
@@ -24,6 +24,14 @@ If you are a developer you need to run this command:
 ```bash 
 pip install .[dev]
 ```
+
+### Biological inspiration
+Our biological inspiration is Inspired by Howard Gardner's MI Theory which is the following:
+* Individual speed of each agent (Bodily-Kinesthetic Intelligence)
+* Forgetfulness (Visual-Spatial Intelligence)
+* Following the leaves (Logical-Mathematical Intelligence)
+The experiments, results and conclusion could be found at [this](https://github.com/MariaDukmak/MazeRunner/tree/main/analysis) file. 
+
 ### Multi agent
 When adding the multi-agent aspect, we focused on the cooperation between the different agents.
 
@@ -37,8 +45,8 @@ In the next day, the agent will try (depends on the policy) to complete the task
 
 These aspects can be seen in the following files in the code:
 * To split tasks at the end of each day: [Maze environment](https://github.com/MariaDukmak/MazeRunner/blob/main/mazerunner_sim/envs/mazerunner_env.py)
-* The auction algoritme: [_auction_tasks](https://github.com/MariaDukmak/MazeRunner/blob/main/mazerunner_sim/envs/mazerunner_env.py)
+* The auction algoritme: [_auction_tasks](https://github.com/MariaDukmak/MazeRunner/blob/main/mazerunner_sim/envs/mazerunner_env.py#L134)
 * To include the task with the policy: [policies](https://github.com/MariaDukmak/MazeRunner/tree/main/mazerunner_sim/policies)
 
 To understand how the agents thier actions decide, you can have a look at the following Flowchart:
-[]()
+![](https://github.com/MariaDukmak/MazeRunner/blob/main/readme_assets/flowchart_auction.png)
